@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "stardust-tunnel-backend"
+version = "0.1.0"
+description = ""
+authors = ["paketoff <kekisreal228@gmail.com>", "paketoff <roman.rudyi.bl@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.8"
+beautifulsoup4 = "^4.13.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
