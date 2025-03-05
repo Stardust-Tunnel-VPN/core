@@ -9,7 +9,7 @@ Filters list:
 """
 
 filters_VPN_GATE = [
-    "HostName",
+    "#HostName",
     "IP",
     "Score",
     "Ping",
@@ -23,5 +23,7 @@ filters_VPN_GATE = [
     "LogType",
     "Operator",
     "Message",
-    "OpenVPN_ConfigData_Base64",
+    # "OpenVPN_ConfigData_Base64\r",
 ]
+
+filters_VPN_GATE_set = set(filters_VPN_GATE)
