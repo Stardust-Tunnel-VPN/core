@@ -60,7 +60,6 @@ class Packer:
                 row_values = line.split(",")
                 row_dict = {}
                 for allowed_index, header_name in zip(allowed_indices, allowed_header_names):
-                    # if the iterated row ([value1, value2, valueN, ...]) has more values ​​than the iteration index (this means that the subsequent index value goes beyond the values ​​of this row, i.e. there must be a situation where allowed_index must BE INCLUDED in the number of row values ​​(len(row_values)), otherwise during iteration it will simply go beyond the indices and assign something incorrectly)
                     if allowed_index < len(row_values):
                         row_dict[header_name] = row_values[allowed_index]
                 transformed_data.append(row_dict)
@@ -75,6 +74,7 @@ class Packer:
                     sort_key=sort_by,
                 )
 
+            transformed_data = self.remove_restricted_countries(data=transformed_data)
             return self.format_content(transformed_data)
 
         except Exception as exc:
@@ -98,7 +98,21 @@ class Packer:
             A sorted list of dictionaries.
         """
 
+        # TODO: sort_by returns None in every case
         def key_func(row: Dict[str, str]) -> str:
+
+            # TODO: change it
+            # if sort_key in [
+            #     "Score",
+            #     "Ping",
+            #     "Speed",
+            #     "NumVpnSessions",
+            #     "Uptime",
+            #     "TotalUsers",
+            #     "TotalTraffic",
+            # ]:
+            #     return int(row.get(sort_key, 0))
+
             return row.get(sort_key, "")
 
         is_reversed = direction == SortDirection.DESC
@@ -130,6 +144,27 @@ class Packer:
             return result
         except Exception as exc:
             print("Error in filtering content method: ", str(exc))
+            traceback.print_exc()
+            return []
+
+    def remove_restricted_countries(self, data: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """
+        Filters out VPN servers from restricted countries (for now they are Russia and Iran);
+        It is dangerous to use VPN servers from these countries because they can be controlled by their government.
+
+        Args:
+            data: A list of dictionaries containing the transformed CSV data.
+
+        Returns:
+            A list of dictionaries containing the filtered data.
+        """
+        try:
+            for row in data:
+                if row.get("CountryShort", "") in ["RU", "IR"]:
+                    data.remove(row)
+            return data
+        except Exception as exc:
+            print("Error in filtering out restricted countries: ", str(exc))
             traceback.print_exc()
             return []
 
