@@ -76,7 +76,7 @@ class Packer:
                 )
 
             transformed_data = self.remove_restricted_countries(data=transformed_data)
-            return self.format_content(transformed_data)
+            return transformed_data
 
         except Exception as exc:
             print("Error in content trasnformation method: ", str(exc))

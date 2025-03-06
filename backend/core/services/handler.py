@@ -5,14 +5,14 @@ from core.services.parser import Parser
 from utils.reusable.vars import request_url
 
 
-class vpngateHandler:
+class VPNGateHandler:
     """
     Python class that handles the data from the vpngate.net website.
     """
 
-    def __init__(self):
-        self.parser = Parser(request_url)
-        self.packer = Packer(self.parser.parseURL())
+    def __init__(self, parser: Parser, packer: Packer):
+        self.parser = parser
+        self.packer = packer
 
     def get_vpn_servers(self) -> List[Dict[str, str]]:
         """

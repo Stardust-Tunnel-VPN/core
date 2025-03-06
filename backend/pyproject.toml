@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.115.8"
+fastapi = {extras = ["standart"], version = "^0.115.11"}
 beautifulsoup4 = "^4.13.3"
 requests = "^2.32.3"
 isort = "^6.0.1"
