@@ -1,7 +1,8 @@
-from typing import List, Dict, Optional
-from utils.reusable.filters import filters_VPN_GATE
 import traceback
 from pprint import pformat
+from typing import Dict, List, Optional
+
+from utils.reusable.filters import filters_VPN_GATE
 from utils.reusable.sort_directions import SortDirection
 
 
@@ -78,7 +79,7 @@ class Packer:
             return self.format_content(transformed_data)
 
         except Exception as exc:
-            print("Error in content trasnformation method:", str(exc))
+            print("Error in content trasnformation method: ", str(exc))
             traceback.print_exc()
             return []
 

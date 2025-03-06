@@ -1,9 +1,8 @@
+from typing import Dict, List
+
 from core.services.packer import Packer
 from core.services.parser import Parser
-
 from utils.reusable.vars import request_url
-
-from typing import List, Dict
 
 
 class vpngateHandler:
@@ -19,4 +18,7 @@ class vpngateHandler:
         """
         Returns the VPN servers from the vpngate.net website.
         """
-        return self.packer.transform_content()
+        try:
+            return self.packer.transform_content(order_by="DESC")
+        except Exception as exc:
+            return {"You've got an error in getting vpn server list method, ": str(e)}
