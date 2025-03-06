@@ -1,7 +1,8 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from utils.reusable.filters import filters_VPN_GATE
 import traceback
 from pprint import pformat
+from utils.reusable.sort_directions import SortDirection
 
 
 class Packer:
@@ -21,7 +22,12 @@ class Packer:
     def __init__(self, content: str):
         self.content = content
 
-    def transformContent(self) -> List[Dict[str, str]]:
+    def transform_content(
+        self,
+        search: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        order_by: Optional[SortDirection] = SortDirection.DESC,
+    ) -> List[Dict[str, str]]:
         """
         Transforms the CSV content into a list of dictionaries, keeping only the allowed fields.
 
@@ -50,7 +56,7 @@ class Packer:
 
             for line in csv_lines[2:]:
                 if not line.strip():
-                    continue  # Skip empty lines
+                    continue
                 row_values = line.split(",")
                 row_dict = {}
                 for allowed_index, header_name in zip(allowed_indices, allowed_header_names):
@@ -59,14 +65,75 @@ class Packer:
                         row_dict[header_name] = row_values[allowed_index]
                 transformed_data.append(row_dict)
 
-            return self.formatTransformedContent(transformed_data)
+            if search:
+                transformed_data = self.filter_by_hostname(data=transformed_data, search=search)
 
-        except Exception as e:
-            print("Error in transformContent:", str(e))
+            if sort_by:
+                transformed_data = self.sort_content(
+                    data=transformed_data,
+                    direction=SortDirection.DESC if not order_by else order_by,
+                    sort_key=sort_by,
+                )
+
+            return self.format_content(transformed_data)
+
+        except Exception as exc:
+            print("Error in content trasnformation method:", str(exc))
             traceback.print_exc()
             return []
 
-    def formatTransformedContent(self, data: List[Dict[str, str]]) -> str:
+    def sort_content(
+        self,
+        data: List[Dict[str, str]],
+        direction: SortDirection = SortDirection.DESC,
+        sort_key: str = "Ping",
+    ) -> List[Dict[str, str]]:
+        """
+        Sorts the transformed data based on the 'Score' field.
+
+        Args:
+            data: A list of dictionaries containing the transformed CSV data.
+
+        Returns:
+            A sorted list of dictionaries.
+        """
+
+        def key_func(row: Dict[str, str]) -> str:
+            return row.get(sort_key, "")
+
+        is_reversed = direction == SortDirection.DESC
+
+        try:
+            # why it works like that?
+            sorted_data = sorted(data, key=key_func, reverse=is_reversed)
+        except Exception as exc:
+            print("Error in sorting content method: ", str(exc))
+            traceback.print_exc()
+            return []
+
+    def filter_by_hostname(self, data: List[Dict[str, str]], search: str) -> List[Dict[str, str]]:
+        """
+        Filters the transformed data based on input filters criterias.
+
+        Args:
+            data: A list of dictionaries containing the transformed CSV data.
+            search: Search string. (should work with hostname header only)
+
+        Returns:
+            A sorted list of dictionaries.
+        """
+        try:
+            result = []
+            for row in data:
+                if search.lower() in row.get("#HostName", "").lower():
+                    result.append(row)
+            return result
+        except Exception as exc:
+            print("Error in filtering content method: ", str(exc))
+            traceback.print_exc()
+            return []
+
+    def format_content(self, data: List[Dict[str, str]]) -> str:
         """
         Formats the transformed data into a pretty string representation.
 

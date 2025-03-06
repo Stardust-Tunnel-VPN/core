@@ -19,4 +19,4 @@ class vpngateHandler:
         """
         Returns the VPN servers from the vpngate.net website.
         """
-        return self.packer.transformContent()
+        return self.packer.transform_content()
