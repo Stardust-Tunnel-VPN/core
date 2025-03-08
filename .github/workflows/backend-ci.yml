@@ -2,7 +2,8 @@ name: Backend CI
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - "*"
     paths:
       - "backend/**"
   pull_request:
@@ -46,7 +47,7 @@ jobs:
       - name: Check server startup (optional)
         run: |
           cd backend
-          poetry run uvicorn main:app --port 8001 &
+          poetry shell & poetry run uvicorn main:app --port 8001 &
           SERVER_PID=$!
           sleep 3
           curl -f http://127.0.0.1:8001/ || (echo "Server not responding" && exit 1)
