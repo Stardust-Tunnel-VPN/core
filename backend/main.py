@@ -1,9 +1,9 @@
 from fastapi import APIRouter, FastAPI, Request
-from api.router.router import main_router
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import ResponseValidationError
+from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST
 
+from api.router.router import main_router
 
 app = FastAPI()
 

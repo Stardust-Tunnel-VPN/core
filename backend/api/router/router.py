@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from api.endpoints.vpn_connector import router as vpn_connector_router
 
 """

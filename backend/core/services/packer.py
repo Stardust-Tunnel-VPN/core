@@ -100,27 +100,20 @@ class Packer:
         """
 
         # TODO: sort_by returns None in every case
-        def key_func(row: Dict[str, str]) -> str:
-
-            # TODO: change it
-            # if sort_key in [
-            #     "Score",
-            #     "Ping",
-            #     "Speed",
-            #     "NumVpnSessions",
-            #     "Uptime",
-            #     "TotalUsers",
-            #     "TotalTraffic",
-            # ]:
-            #     return int(row.get(sort_key, 0))
-
-            return row.get(sort_key, "")
+        def key_func(row: Dict[str, str]) -> int:
+            try:
+                return int(row.get(sort_key, "0"))
+            except Exception as exc:
+                print("Error in sorting content method: ", str(exc))
+                traceback.print_exc()
+                return 0
 
         is_reversed = direction == SortDirection.DESC
 
         try:
             # why it works like that?
             sorted_data = sorted(data, key=key_func, reverse=is_reversed)
+            return sorted_data
         except Exception as exc:
             print("Error in sorting content method: ", str(exc))
             traceback.print_exc()
@@ -160,10 +153,11 @@ class Packer:
             A list of dictionaries containing the filtered data.
         """
         try:
+            filtered_data = []
             for row in data:
-                if row.get("CountryShort", "") in ["RU", "IR"]:
-                    data.remove(row)
-            return data
+                if row.get("CountryShort", "") not in ["RU", "IR"]:
+                    filtered_data.append(row)
+            return filtered_data
         except Exception as exc:
             print("Error in filtering out restricted countries: ", str(exc))
             traceback.print_exc()

@@ -1,0 +1,8 @@
+* VPNGate Sample List *
+#HostName,IP,Score,Ping,Speed,CountryLong,CountryShort,NumVpnSessions,Uptime,TotalUsers,TotalTraffic,LogType,Operator,Message,OpenVPN_ConfigData_Base64
+public-vpn-66,219.100.37.52,2988469,17,961864239,Japan,JP,293,2951968430,22843680,1326126301582413,2weeks,Daiyuu Nobori_ Japan. Academic Use Only.,
+public-vpn-164,219.100.37.128,2725616,12,1659619664,Japan,JP,170,2951365175,11963605,609191640053686,2weeks,Daiyuu Nobori_ Japan. Academic Use Only.,
+public-vpn-200,219.100.37.213,2616394,16,150333456,Japan,JP,319,2808262251,13855360,808147909064213,2weeks,Daiyuu Nobori_ Japan. Academic Use Only.,
+public-vpn-180,1.2.3.4,999999,150,500000,Saudi Arabia,SA,20,1000,999,123456,2weeks,SomeOperator,TestMessage,
+public-vpn-77,1.2.3.5,888888,20,600000,Russia,RU,99,999999,9999,99999,2weeks,AnotherOperator,Restricted,
+public-vpn-88,1.2.3.5,888888,20,600000,Iran,IR,99,999999,9999,99999,2weeks,AnotherOperator,Restricted,

@@ -1,8 +1,9 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from core.services.packer import Packer
 from core.services.parser import Parser
 from utils.reusable.vars import request_url
+from utils.reusable.sort_directions import SortDirection
 
 
 class VPNGateHandler:
@@ -14,11 +15,16 @@ class VPNGateHandler:
         self.parser = parser
         self.packer = packer
 
-    def get_vpn_servers(self) -> List[Dict[str, str]]:
+    def get_vpn_servers(
+        self,
+        search: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        order_by: Optional[SortDirection] = SortDirection.ASC,
+    ) -> List[Dict[str, str]]:
         """
         Returns the VPN servers from the vpngate.net website.
         """
         try:
-            return self.packer.transform_content(order_by="DESC")
+            return self.packer.transform_content(search=search, sort_by=sort_by, order_by=order_by)
         except Exception as exc:
-            return {"You've got an error in getting vpn server list method, ": str(e)}
+            return {"You've got an error in getting vpn server list method, ": str(exc)}
