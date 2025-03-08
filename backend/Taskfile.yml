@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  test:
+    desc: "Run tests with coverage"
+    cmds:
+      - "pytest --maxfail=1 --disable-warnings --cov=. --cov-report=term-missing"
+
+  run:
+    desc: "Run uvicorn server in development mode"
+    cmds:
+      - "uvicorn main:app --reload"
+
+  isort:
+    desc: "Sort imports using poetry + isort"
+    cmds:
+      - "poetry run isort ."
