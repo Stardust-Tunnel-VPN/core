@@ -1,7 +1,9 @@
 # tests/test_packer.py
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from core.services.packer import Packer
 from utils.reusable.sort_directions import SortDirection
 

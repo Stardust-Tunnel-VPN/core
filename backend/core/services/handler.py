@@ -2,8 +2,8 @@ from typing import Dict, List, Optional
 
 from core.services.packer import Packer
 from core.services.parser import Parser
-from utils.reusable.vars import request_url
 from utils.reusable.sort_directions import SortDirection
+from utils.reusable.vars import request_url
 
 
 class VPNGateHandler:

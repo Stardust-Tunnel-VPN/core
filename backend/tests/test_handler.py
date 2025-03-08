@@ -1,13 +1,14 @@
 # tests/test_handler.py
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app  # Make sure 'app' is your FastAPI instance
 from core.services.handler import VPNGateHandler
-from core.services.parser import Parser
 from core.services.packer import Packer
+from core.services.parser import Parser
+from main import app  # Make sure 'app' is your FastAPI instance
 
 
 def test_vpn_servers_list_endpoint():
