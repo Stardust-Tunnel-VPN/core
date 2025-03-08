@@ -50,6 +50,6 @@ jobs:
           poetry shell & poetry run uvicorn main:app --port 8001 &
           SERVER_PID=$!
           sleep 3
-          curl -f http://127.0.0.1:8001/ || (echo "Server not responding" && exit 1)
+          curl -f http://127.0.0.1:8001/api/v1/vpn_servers_list || (echo "Server not responding" && exit 1)
           kill $SERVER_PID
           wait $SERVER_PID || true

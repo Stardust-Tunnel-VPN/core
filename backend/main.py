@@ -11,8 +11,7 @@ app = FastAPI()
 @app.exception_handler(ResponseValidationError)
 async def response_validation_exception_handler(request: Request, exc: ResponseValidationError):
     """
-    Кастомный обработчик для ResponseValidationError.
-    Отдаём 400 (или 422), плюс формируем более понятный текст.
+    Custom exception handler for ResponseValidationError.
     """
     return JSONResponse(
         status_code=HTTP_400_BAD_REQUEST,
