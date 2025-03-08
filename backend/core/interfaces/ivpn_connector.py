@@ -1,5 +1,5 @@
 import asyncio
-from typing import Protocol, Optional
+from typing import Optional, Protocol
 
 """
 Python module that represents the general interface for any L2TP/IPSec protocol VPN connector. 

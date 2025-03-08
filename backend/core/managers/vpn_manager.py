@@ -1,3 +1,0 @@
-"""
-VPN Manager module.
-"""
