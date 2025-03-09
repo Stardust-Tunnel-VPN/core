@@ -6,8 +6,8 @@ import os
 import uuid
 from typing import Optional
 
-from core.interfaces.ivpn_connector import IVpnConnector
 from configuration.macos_l2tp_connection import create_macos_l2tp_service
+from core.interfaces.ivpn_connector import IVpnConnector
 
 logger = logging.getLogger(__name__)
 
