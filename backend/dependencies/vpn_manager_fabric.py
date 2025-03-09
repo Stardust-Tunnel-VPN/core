@@ -2,7 +2,8 @@
 Python module that returns correct VPN Manager class instance depending on the OS of current user.
 """
 
-from platform import system
+import logging
+import platform
 
 from fastapi import Depends
 
@@ -10,6 +11,8 @@ from core.interfaces.ivpn_connector import IVpnConnector
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from core.managers.vpn_manager_win import WindowsL2TPConnector
 from utils.reusable.vpn_implementations import VpnImplementation
+
+logger = logging.getLogger(__name__)
 
 
 def get_vpn_connector() -> IVpnConnector:

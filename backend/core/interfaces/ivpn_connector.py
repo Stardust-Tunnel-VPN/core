@@ -14,7 +14,8 @@ class IVpnConnector(Protocol):
     """
 
     async def connect(
-        self, server_ip: str, username: str = "vpn", password: str = "vpn", psk: str = "vpn"
+        self,
+        server_ip: Optional[str] = None,
     ) -> None:
         """
         Asynchronously connect to the given VPN server using L2TP/IPSec.
@@ -26,7 +27,7 @@ class IVpnConnector(Protocol):
         """
         ...
 
-    async def disconnect(self, server_ip: str) -> None:
+    async def disconnect(self, server_ip: Optional[str]) -> None:
         """
         Asynchronously disconnect from the given VPN server.
         :param server_ip: The VPN server IP or name used previously

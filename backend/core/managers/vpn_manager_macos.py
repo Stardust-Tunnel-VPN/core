@@ -1,12 +1,14 @@
 # core/services/managers/vpn_manager_macos.py
 
+"""
+Python module for managing VPN connections on macOS.
+"""
+
 import asyncio
 import logging
-import os
-import uuid
 from typing import Optional
 
-from configuration.macos_l2tp_connection import create_macos_l2tp_service
+from configuration.macos_l2tp_connection import open_macos_network_settings
 from core.interfaces.ivpn_connector import IVpnConnector
 
 logger = logging.getLogger(__name__)
@@ -14,73 +16,158 @@ logger = logging.getLogger(__name__)
 
 class MacOSL2TPConnector(IVpnConnector):
     """
-    Use 'scutil --nc start/stop' for connect/disconnect.
-    PF for kill switch.
-    Also create a .mobileconfig if not installed yet.
+    For macOS:
+      - We can open System Settings -> Network to let user manually create an L2TP service.
+      - If the user has already created a service named self.service_name (e.g. "MyL2TP"),
+        we can connect/disconnect using `scutil --nc start/stop`.
+         (Unfortunately, we can't establish it fully programmatically. Apple doesn't allow it. We can only create a connection manually in the System Settings -> Network pane and after that connect to it programmatically, that's the only way for 09.03.2025)
+
+    METHODS THAT SHOULD BE IMPLEMENTED ACCORDING TO IVpnConnector:
+    - connect ✅
+    - disconnect ✅
+    - status ✅
+    - enable_kill_switch ✅ (not tested yet)
+    - disable_kill_switch ✅ (not tested yet)
     """
 
     def __init__(self, service_name: str = "MyL2TP"):
         self.service_name = service_name
+        self.service_psk_value = "vpn"
+
+    # TODO: extract repeated vars to reusable-utils
 
     async def connect(
-        self, server_ip: str, username: str = "vpn", password: str = "vpn", psk: str = "vpn"
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
     ) -> None:
         """
-        MacOS connector class method that connects to a VPN server using L2TP/IPsec protocol.
-
-        Args:
-            server_ip (str): The IP address of the VPN server.
-            username (str): The username for the VPN connection. Defaults to "vpn".
-            password (str): The password for the VPN connection. Defaults to "vpn".
-            psk (str): The pre-shared key for the connection. Defaults to "vpn".
+        VPN Class method to connect to a VPN server using L2TP/IPsec protocol on macOS.
 
         Raises:
             RuntimeError: If the connection fails.
         """
         try:
-            # CREATE VPN PROFILE #
-            await create_macos_l2tp_service(server_ip, self.service_name, psk, username, password)
+            # OPENING NETWORK SETTINGS #
+            logger.info("macOS: Opening Network Settings to let the user configure L2TP.")
+            await open_macos_network_settings()
 
-            # CONNECT WITH SCUTIL #
-            cmd = ["scutil", "--nc", "start", self.service_name]
-            logger.info(
-                f"MacOSL2TPConnector: starting service '{self.service_name}' for {server_ip} with scutil."
-            )
+            # CONNECTION TO 'MYL2TP' SERVICE #
+            cmd = ["scutil", "--nc", "start", self.service_name, "--secret", self.service_psk_value]
+
+            logger.info(f"Trying to start L2TP service '{self.service_name}' for IP={server_ip}")
 
             proc = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
-
             stdout, stderr = await proc.communicate()
 
             if proc.returncode != 0:
-                err = stderr.decode()
-                raise RuntimeError(f"Failed to start VPN on macOS: {err}")
+                err = stderr.decode().strip()
+                msg = (
+                    f"Failed to start VPN on macOS: {err}. "
+                    "Make sure you've created the L2TP service in System Settings -> Network."
+                )
+                raise RuntimeError(msg)
 
             logger.info(f"Connected to {server_ip} via L2TP: {stdout.decode().strip()}")
 
         except Exception as exc:
             logger.error(f"Failed to connect to {server_ip} on macOS: {exc}")
-            raise
+            raise exc
 
-    async def disconnect(self, server_ip: str) -> None:
+    async def disconnect(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> None:
         """
-        MacOS connector class method that disconnects from a VPN server.
-
-        Args:
-            server_ip (str): The IP address of the VPN server.
+        Class method to disconnect from a VPN server on macOS.
 
         Raises:
             RuntimeError: If the disconnection fails.
         """
         try:
-
-            # DISCONNECT WITH SCUTIL #
+            # DISCONNECTING FROM 'MYL2TP' SERVICE #
             cmd = ["scutil", "--nc", "stop", self.service_name]
 
             logger.info(
-                f"MacOSL2TPConnector: stopping service '{self.service_name}' for {server_ip} with scutil."
+                f"Stopping L2TP service '{self.service_name}' for IP={server_ip} with scutil."
             )
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                err = stderr.decode().strip()
+                raise RuntimeError(f"Failed to stop VPN on macOS: {err}")
+
+            logger.info(
+                f"Disconnected VPN '{self.service_name}' from {server_ip}. Output: {stdout.decode().strip()}"
+            )
+        except Exception as exc:
+            logger.error(f"Failed to disconnect from {server_ip}: {exc}")
+            raise
+
+    async def status(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
+        """
+        Class method to check the status of a VPN connection on macOS.
+
+        Returns:
+            str: The status of the VPN connection.
+        """
+        try:
+            # CHECKING STATUS OF 'MYL2TP' SERVICE #
+            cmd = ["scutil", "--nc", "status", self.service_name]
+
+            logger.info(f"Checking VPN status on macOS: {cmd}")
+            proc = await asyncio.create_subprocess_exec(
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+
+            stdout, _ = await proc.communicate()
+            output = stdout.decode().lower()
+
+            if "disconnected" in output:
+                return "disconnected"
+            elif "connected" in output:
+                return "connected"
+            else:
+                return "unknown"
+        except Exception as exc:
+            logger.error(f"Failed to check status on macOS: {exc}")
+            return "unknown"
+
+    async def enable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> None:
+        """
+        Class method to enable a kill switch on macOS.
+
+        Raises:
+            RuntimeError: If the kill switch fails to enable.
+        """
+        try:
+            # ENABLE KILL SWITCH (MACOS)#
+            cmd = ["sudo", "pfctl", "-e"]
+
+            logger.info(f"Enabling kill switch on macOS: {cmd}")
 
             proc = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -89,68 +176,44 @@ class MacOSL2TPConnector(IVpnConnector):
             stdout, stderr = await proc.communicate()
 
             if proc.returncode != 0:
-                err = stderr.decode()
-                raise RuntimeError(f"Failed to stop VPN on macOS: {err}")
+                err = stderr.decode().strip()
+                raise RuntimeError(f"Failed to enable kill switch on macOS: {err}")
 
-            logger.info(
-                f"Disconnected VPN '{self.service_name}' from {server_ip}. Output: {stdout.decode().strip()}"
-            )
-
+            logger.info(f"Kill switch enabled on macOS: {stdout.decode().strip()}")
         except Exception as exc:
-            logger.error(f"Failed to disconnect from {server_ip}: {exc}")
-            raise
+            logger.error(f"Failed to enable kill switch on macOS: {exc}")
+            raise exc
 
-    async def status(self, server_ip: str) -> str:
+    async def disable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> None:
         """
-        MacOS connector class method that checks the current status of the VPN connection.
+        Class method to disable a kill switch on macOS.
 
-        Args:
-            server_ip (str): The IP address of the VPN server.
-
-        Returns:
-            str: The status of the VPN connection.
+        Raises:
+            RuntimeError: If the kill switch fails to disable.
         """
         try:
-            cmd = ["scutil", "--nc", "status", self.service_name]
+            # DISABLE KILL SWITCH (MACOS)#
+            cmd = ["sudo", "pfctl", "-d"]
+
+            logger.info(f"Disabling kill switch on macOS: {cmd}")
 
             proc = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, _ = await proc.communicate()
+            stdout, stderr = await proc.communicate()
 
-            output = stdout.decode().lower()
+            if proc.returncode != 0:
+                err = stderr.decode().strip()
+                raise RuntimeError(f"Failed to disable kill switch on macOS: {err}")
 
-            if "connected" in output:
-                return "connected"
-            return "disconnected"
-
+            logger.info(f"Kill switch disabled on macOS: {stdout.decode().strip()}")
         except Exception as exc:
-            logger.error(f"Failed to check status on macOS: {exc}")
-            return "unknown"
-
-    # async def enable_kill_switch(self, server_ip: str) -> None:
-    #     """
-    #     Example usage of pfctl.
-    #     In real scenario, we'd place a PF config that blocks all except the VPN server and ppp0/utunX.
-    #     """
-    #     try:
-    #         logger.info(f"Enabling kill switch on macOS for server {server_ip} (dummy).")
-    #         cmd_enable_pf = ["sudo", "pfctl", "-e"]
-    #         proc = await asyncio.create_subprocess_exec(*cmd_enable_pf)
-    #         await proc.communicate()
-
-    #         # Additional steps (like writing /etc/pf.anchors/killvpn.conf and reloading).
-    #     except Exception as exc:
-    #         logger.error(f"Failed to enable kill switch on macOS: {exc}")
-    #         raise
-
-    # async def disable_kill_switch(self, server_ip: str) -> None:
-    #     try:
-    #         logger.info(f"Disabling kill switch on macOS.")
-    #         cmd_disable_pf = ["sudo", "pfctl", "-d"]
-    #         proc = await asyncio.create_subprocess_exec(*cmd_disable_pf)
-    #         await proc.communicate()
-    #     except Exception as exc:
-    #         logger.error(f"Failed to disable kill switch on macOS: {exc}")
-    #         raise
+            logger.error(f"Failed to disable kill switch on macOS: {exc}")
+            raise exc
