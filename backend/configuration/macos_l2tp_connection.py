@@ -26,3 +26,30 @@ async def open_macos_network_settings() -> None:
     except Exception as exc:
         logger.error(f"Failed to open network settings: {exc}")
         raise
+
+
+async def extract_ip_address_from_service_name(service_name: str) -> str:
+    """
+    Extracts the IP address from the given macOS service name.
+    :param service_name: The macOS service name to extract the IP address from.
+    :returns: The IP address extracted from the service name.
+    """
+    try:
+        cmd = ["scutil", "--nc", "show", service_name]
+
+        logger.info(f"Extracting IP address from macOS service name: {cmd}")
+        proc = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await proc.communicate()
+
+        for line in stdout.decode().splitlines():
+            if "commremoteaddress" in line.lower():
+                return line.split(":")[-1].strip()
+
+        if proc.returncode != 0:
+            raise RuntimeError(f"Failed to extract IP address: {stderr.decode()}")
+    except Exception as exc:
+        logger.error(f"Failed to extract IP address from service name: {exc}")
+        raise exc

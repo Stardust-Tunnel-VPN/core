@@ -8,7 +8,8 @@ import asyncio
 import logging
 from typing import Optional
 
-from configuration.macos_l2tp_connection import open_macos_network_settings
+from configuration.macos_l2tp_connection import (
+    extract_ip_address_from_service_name, open_macos_network_settings)
 from core.interfaces.ivpn_connector import IVpnConnector
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class MacOSL2TPConnector(IVpnConnector):
     def __init__(self, service_name: str = "MyL2TP"):
         self.service_name = service_name
         self.service_psk_value = "vpn"
+        self.current_vpn_ip: Optional[str] = None
 
     # TODO: extract repeated vars to reusable-utils
 
@@ -64,6 +66,8 @@ class MacOSL2TPConnector(IVpnConnector):
             )
             stdout, stderr = await proc.communicate()
 
+            self.current_vpn_ip = await extract_ip_address_from_service_name(self.service_name)
+
             if proc.returncode != 0:
                 err = stderr.decode().strip()
                 msg = (
@@ -73,7 +77,6 @@ class MacOSL2TPConnector(IVpnConnector):
                 raise RuntimeError(msg)
 
             logger.info(f"Connected to {server_ip} via L2TP: {stdout.decode().strip()}")
-
         except Exception as exc:
             logger.error(f"Failed to connect to {server_ip} on macOS: {exc}")
             raise exc
@@ -165,21 +168,7 @@ class MacOSL2TPConnector(IVpnConnector):
         """
         try:
             # ENABLE KILL SWITCH (MACOS)#
-            cmd = ["sudo", "pfctl", "-e"]
-
-            logger.info(f"Enabling kill switch on macOS: {cmd}")
-
-            proc = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
-
-            stdout, stderr = await proc.communicate()
-
-            if proc.returncode != 0:
-                err = stderr.decode().strip()
-                raise RuntimeError(f"Failed to enable kill switch on macOS: {err}")
-
-            logger.info(f"Kill switch enabled on macOS: {stdout.decode().strip()}")
+            
         except Exception as exc:
             logger.error(f"Failed to enable kill switch on macOS: {exc}")
             raise exc
@@ -199,21 +188,7 @@ class MacOSL2TPConnector(IVpnConnector):
         """
         try:
             # DISABLE KILL SWITCH (MACOS)#
-            cmd = ["sudo", "pfctl", "-d"]
-
-            logger.info(f"Disabling kill switch on macOS: {cmd}")
-
-            proc = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
-
-            stdout, stderr = await proc.communicate()
-
-            if proc.returncode != 0:
-                err = stderr.decode().strip()
-                raise RuntimeError(f"Failed to disable kill switch on macOS: {err}")
-
-            logger.info(f"Kill switch disabled on macOS: {stdout.decode().strip()}")
+            
         except Exception as exc:
             logger.error(f"Failed to disable kill switch on macOS: {exc}")
             raise exc
