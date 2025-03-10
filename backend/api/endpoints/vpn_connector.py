@@ -15,6 +15,7 @@ router = APIRouter()
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
     connector: IVpnConnector = Depends(get_vpn_connector),
+    kill_switch_enabled: Optional[bool] = False,
 ) -> None:
     """
     Connect to the given VPN server using L2TP/IPSec.
@@ -30,7 +31,7 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        await connector.connect(server_ip=server_ip)
+        await connector.connect(server_ip=server_ip, kill_switch_enabled=kill_switch_enabled)
     except Exception as exc:
         return {"You've got an error in connect to vpn method, ": str(exc)}
 

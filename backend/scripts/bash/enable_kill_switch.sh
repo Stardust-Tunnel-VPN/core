@@ -4,14 +4,14 @@
 # Blocks ALL network traffic except VPN traffic on the detected VPN interface
 # Requires sudo access
 
-VPN_SERVER_IP="$1"
+VPN_SERVER_IP="{{VPN_SERVER_IP}}"
 
 if [ -z "$VPN_SERVER_IP" ]; then
     echo "Error: No VPN server IP provided."
     exit 1
 fi
 
-# Dynamically detect the VPN interface by searching for the VPN_SERVER_IP in ifconfig output.
+# Dynamically detect the VPN interface by searching for VPN_SERVER_IP in ifconfig output.
 VPN_INTERFACE=$(ifconfig | grep -B 1 "$VPN_SERVER_IP" | head -n 1 | awk '{print $1}' | sed 's/://')
 
 if [ -z "$VPN_INTERFACE" ]; then

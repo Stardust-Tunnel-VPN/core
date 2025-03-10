@@ -4,6 +4,8 @@ Python script that contains a snippet of code for a kill switch feature in a VPN
 
 import logging
 import pathlib
+import ipaddress
+import socket
 from enum import Enum
 
 import aiofiles
@@ -20,7 +22,37 @@ class ScriptsNames(Enum):
     DISABLE_KILL_SWITCH = "disable_kill_switch.sh"
 
 
-SCRIPTS_DIR = pathlib.Path(__file__).parent.absolute() / "bash"
+SCRIPTS_DIR = pathlib.Path(__file__).parent.absolute()
+
+
+def resolve_vpn_ip(vpn_server_ip: str) -> str:
+    """
+    Resolves a VPN server identifier to an IP address.
+    If vpn_server_ip is already a valid IP, returns it unchanged.
+
+    Args:
+        vpn_server_ip (str): A hostname or IP.
+
+    Returns:
+        str: The resolved IP address.
+
+    Raises:
+        Exception: If hostname resolution fails.
+    """
+    try:
+        ipaddress.ip_address(vpn_server_ip)
+
+        return vpn_server_ip
+    except ValueError:
+        try:
+            resolved_ip = socket.gethostbyname(vpn_server_ip)
+
+            logger.info(f"Resolved hostname {vpn_server_ip} to IP {resolved_ip}")
+
+            return resolved_ip
+        except Exception as exc:
+            logger.error(f"Failed to resolve hostname {vpn_server_ip}: {exc}")
+            raise exc
 
 
 async def read_script(script_name: ScriptsNames) -> str:
@@ -37,8 +69,10 @@ async def read_script(script_name: ScriptsNames) -> str:
         FileNotFoundError: If the script file does not exist.
     """
     script_path = SCRIPTS_DIR / script_name.value
+
     if not script_path.is_file():
         raise FileNotFoundError(f"Script not found: {script_path}")
+
     try:
         async with aiofiles.open(script_path, "r", encoding="utf-8") as f:
             return await f.read()
@@ -50,17 +84,24 @@ async def read_script(script_name: ScriptsNames) -> str:
 async def get_enable_kill_switch_script(vpn_server_ip: str) -> str:
     """
     Asynchronously reads and formats the enable kill switch script with the provided VPN server IP.
+    If vpn_server_ip is a hostname, it is resolved to an IP.
 
     Args:
-        vpn_server_ip (str): The VPN server IP address.
+        vpn_server_ip (str): The VPN server identifier.
 
     Returns:
         str: The formatted bash script.
     """
+    if vpn_server_ip is None:
+        raise ValueError("vpn_server_ip cannot be None")
+
+    # Resolve hostname to IP if needed.
+    resolved_ip = resolve_vpn_ip(vpn_server_ip)
+
     try:
         script = await read_script(ScriptsNames.ENABLE_KILL_SWITCH)
         # Replace placeholder with the actual VPN IP.
-        return script.replace("{{VPN_SERVER_IP}}", vpn_server_ip)
+        return script.replace("{{VPN_SERVER_IP}}", resolved_ip)
     except Exception as exc:
         logger.error(f"Failed to get enable kill switch script: {exc}")
         raise exc

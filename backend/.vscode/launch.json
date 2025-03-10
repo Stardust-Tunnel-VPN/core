@@ -4,11 +4,11 @@
     {
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/main.py",
+      "program": "core/backend/main.py",
       "args": ["run", "--host", "127.0.0.1", "--port", "8000"],
       "jinja": true,
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "core/backend/"
       }
     }
   ]

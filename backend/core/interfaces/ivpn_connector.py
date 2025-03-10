@@ -16,6 +16,10 @@ class IVpnConnector(Protocol):
     async def connect(
         self,
         server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+        kill_switch_enabled: Optional[bool] = False,
     ) -> None:
         """
         Asynchronously connect to the given VPN server using L2TP/IPSec.
@@ -23,6 +27,7 @@ class IVpnConnector(Protocol):
         :param username: Typically 'vpn'
         :param password: Typically 'vpn'
         :param psk: Pre-shared key for IPSec, typically 'vpn'
+        :param kill_switch_enabled: Enable kill switch blocking all traffic outside VPN
         :raises Exception: if failed
         """
         ...
