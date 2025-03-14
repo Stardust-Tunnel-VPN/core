@@ -13,7 +13,7 @@ from configuration.macos_l2tp_connection import (
     open_macos_network_settings,
 )
 from core.interfaces.ivpn_connector import IVpnConnector
-from scripts.bash.kill_switch import get_disable_kill_switch_script, get_enable_kill_switch_script
+from scripts.bash.kill_switch import enable_kill_switch, disable_kill_switch
 from utils.reusable.commands.macos.reusable_commands_map import cmds_map_macos
 
 logger = logging.getLogger(__name__)
@@ -135,7 +135,7 @@ class MacOSL2TPConnector(IVpnConnector):
         Raises:
             RuntimeError: If the disconnection fails.
         """
-        if self.status() == "Connected" and self.current_vpn_ip:
+        if await self.status() == "Connected" and self.current_vpn_ip:
             try:
                 # DISCONNECTING FROM 'MYL2TP' SERVICE #
                 cmd = cmds_map_macos["disconnect_from_l2tp_service"] + [self.service_name]
@@ -225,11 +225,7 @@ class MacOSL2TPConnector(IVpnConnector):
 
             logger.info(f"Enabling kill switch. Current VPN IP: {self.current_vpn_ip}")
 
-            enable_script = await get_enable_kill_switch_script(self.current_vpn_ip)
-
-            proc = await asyncio.create_subprocess_shell(enable_script)
-
-            await proc.communicate()
+            await enable_kill_switch()
 
             return f"Kill switch has been enabled successfully for {self.current_vpn_ip}!"
         except Exception as exc:
@@ -252,10 +248,7 @@ class MacOSL2TPConnector(IVpnConnector):
         try:
             # DISABLE KILL SWITCH (MACOS)#
 
-            disable_kill_switch_script = await get_disable_kill_switch_script()
-
-            proc = await asyncio.create_subprocess_shell(disable_kill_switch_script)
-            await proc.communicate()
+            await disable_kill_switch()
 
             return f"Kill switch has been disabled successfully!"
         except Exception as exc:

@@ -1,16 +1,18 @@
 #!/bin/bash
 
-# Скрипт отключения kill-switch на macOS (сброс правил pf)
-# Используйте sudo при запуске: sudo ./disable_kill_switch.sh
+# disable_kill_switch.sh
+#
+# Disables the PF firewall or resets it to default rules from /etc/pf.conf
+# Must be run with sudo or configured in sudoers (NOPASSWD).
 
-PF_CONF="/etc/pf.conf"
+PF_MAIN_CONF="/etc/pf.conf"
 
-echo "Отключаем kill-switch и восстанавливаем стандартные правила pf..."
+echo "Disabling kill-switch and restoring default PF settings..."
 
-# Отключаем pf
+# Disable PF entirely
 sudo pfctl -d
 
-# Сбрасываем стандартную конфигурацию pf из /etc/pf.conf
-sudo pfctl -Fa -f "$PF_CONF"
+# Flush all rules and reload the default /etc/pf.conf
+sudo pfctl -Fa -f "$PF_MAIN_CONF"
 
-echo "Kill-switch отключён, сетевые настройки восстановлены."
+echo "Kill-switch disabled, PF restored to default rules."
