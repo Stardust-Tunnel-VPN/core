@@ -5,7 +5,7 @@ import logging
 import subprocess
 from typing import Optional
 
-from utils.reusable.commands.macos.reusable_commands_map import cmds_map
+from utils.reusable.commands.macos.reusable_commands_map import cmds_map_macos
 
 logger = logging.getLogger(__name__)
 
@@ -16,21 +16,15 @@ Unfortunately, Apple restricts the ability to create VPN connections programmati
 
 
 async def open_macos_network_settings() -> str:
-    """
-    Opens the macOS System Settings -> Network pane (on Ventura+) or
-    System Preferences -> Network (on older macOS).
-    Real behavior may vary by macOS version.
-    """
     try:
+        cmd = cmds_map_macos["open_macos_network_settings"]
 
-        logger.info(f"Opening macOS Network Settings: {cmd}")
+        logger.info(f"Opening macOS Network Settings with command: {' '.join(cmd)}")
 
-        proc = await asyncio.create_subprocess_exec(*cmds_map["open_macos_network_settings"])
-
+        proc = await asyncio.create_subprocess_exec(*cmd)
         await proc.communicate()
 
         logger.info("Instruct the user to create / configure a VPN (L2TP/IPsec) service manually.")
-
         return "Opened macOS Network Settings successfully."
 
     except Exception as exc:
@@ -51,7 +45,7 @@ def extract_ip_address_from_service_name_sync(service_name: str) -> Optional[str
     """
     try:
         result = subprocess.run(
-            cmds_map["extract_ip_address_from_service_name"] + [service_name],
+            cmds_map_macos["extract_ip_address_from_service_name"] + [service_name],
             capture_output=True,
             text=True,
             check=True,
@@ -77,36 +71,36 @@ def extract_ip_address_from_service_name_sync(service_name: str) -> Optional[str
     return None
 
 
-async def wait_for_vpn_ip_sync(
-    service_name: str = "MyL2TP", retries: int = 5, delay: float = 5.0
-) -> str:
-    """
-    Awaits a valid VPN IP address by calling the synchronous extraction function
-    in a separate thread.
+# async def wait_for_vpn_ip_sync(
+#     service_name: str = "MyL2TP", retries: int = 5, delay: float = 5.0
+# ) -> str:
+#     """
+#     Awaits a valid VPN IP address by calling the synchronous extraction function
+#     in a separate thread.
 
-    Args:
-        service_name (str): The name of the VPN service.
-        retries (int): Maximum number of retries.
-        delay (float): Delay between retries in seconds.
+#     Args:
+#         service_name (str): The name of the VPN service.
+#         retries (int): Maximum number of retries.
+#         delay (float): Delay between retries in seconds.
 
-    Returns:
-        str: The extracted VPN IP address.
+#     Returns:
+#         str: The extracted VPN IP address.
 
-    Raises:
-        RuntimeError: If a valid IP is not obtained after the retries.
-    """
-    try:
-        for attempt in range(retries):
-            vpn_ip = await asyncio.to_thread(
-                extract_ip_address_from_service_name_sync, service_name
-            )
-            if vpn_ip:
-                return vpn_ip
-            await asyncio.sleep(delay)
-        raise RuntimeError("Failed to extract VPN IP address after multiple retries.")
-    except Exception as exc:
-        logger.error(f"Error in wait_for_vpn_ip_sync: {exc}")
-        raise exc
+#     Raises:
+#         RuntimeError: If a valid IP is not obtained after the retries.
+#     """
+#     try:
+#         for attempt in range(retries):
+#             vpn_ip = await asyncio.to_thread(
+#                 extract_ip_address_from_service_name_sync, service_name
+#             )
+#             if vpn_ip:
+#                 return vpn_ip
+#             await asyncio.sleep(delay)
+#         raise RuntimeError("Failed to extract VPN IP address after multiple retries.")
+#     except Exception as exc:
+#         logger.error(f"Error in wait_for_vpn_ip_sync: {exc}")
+#         raise exc
 
 
 async def extract_ip_address_from_service_name(service_name: str) -> str:
@@ -120,7 +114,7 @@ async def extract_ip_address_from_service_name(service_name: str) -> str:
         logger.info(f"Extracting IP address from macOS service name: {service_name}")
 
         proc = await asyncio.create_subprocess_exec(
-            *cmds_map["extract_ip_address_from_service_name"] + [service_name],
+            *cmds_map_macos["extract_ip_address_from_service_name"] + [service_name],
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

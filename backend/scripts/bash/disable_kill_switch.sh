@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# Disable VPN Kill-Switch on macOS
-# Requires sudo access
+# Скрипт отключения kill-switch на macOS (сброс правил pf)
+# Используйте sudo при запуске: sudo ./disable_kill_switch.sh
 
-ANCHOR_FILE="/etc/pf.anchors/mykillswitch"
+PF_CONF="/etc/pf.conf"
 
-echo "Disabling Kill-Switch..."
+echo "Отключаем kill-switch и восстанавливаем стандартные правила pf..."
 
-sudo rm -f "$ANCHOR_FILE"
+# Отключаем pf
 sudo pfctl -d
 
-echo "Kill-switch disabled: all network traffic is restored."
+# Сбрасываем стандартную конфигурацию pf из /etc/pf.conf
+sudo pfctl -Fa -f "$PF_CONF"
+
+echo "Kill-switch отключён, сетевые настройки восстановлены."
