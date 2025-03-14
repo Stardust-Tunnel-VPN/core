@@ -20,7 +20,7 @@ class IVpnConnector(Protocol):
         password: Optional[str] = None,
         psk: Optional[str] = None,
         kill_switch_enabled: Optional[bool] = False,
-    ) -> None:
+    ) -> str:
         """
         Asynchronously connect to the given VPN server using L2TP/IPSec.
         :param server_ip: The VPN server IP or hostname.
@@ -32,7 +32,7 @@ class IVpnConnector(Protocol):
         """
         ...
 
-    async def disconnect(self, server_ip: Optional[str]) -> None:
+    async def disconnect(self, server_ip: Optional[str]) -> str:
         """
         Asynchronously disconnect from the given VPN server.
         :param server_ip: The VPN server IP or name used previously

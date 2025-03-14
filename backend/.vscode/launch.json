@@ -9,7 +9,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["main:app", "--reload"],
+      "args": ["main:app"],
       "python": "${command:python.interpreterPath}",
       "cwd": "/Users/paketoff/Desktop/Stardust_Tunnel/core/backend"
     }

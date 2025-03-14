@@ -35,10 +35,15 @@ class MacOSL2TPConnector(IVpnConnector):
     - disable_kill_switch ✅ (not tested yet)
     """
 
-    def __init__(self, service_name: str = "MyL2TP"):
+    def __init__(
+        self,
+        service_name: str = "MyL2TP",
+        service_psk_value: str = "vpn",
+        current_vpn_ip: Optional[str] = None,
+    ):
         self.service_name = service_name
-        self.service_psk_value = "vpn"
-        self.current_vpn_ip: Optional[str] = None
+        self.service_psk_value = service_psk_value
+        self.current_vpn_ip = current_vpn_ip
 
     # TODO: extract repeated vars to reusable-utils
 
@@ -49,7 +54,7 @@ class MacOSL2TPConnector(IVpnConnector):
         password: Optional[str] = None,
         psk: Optional[str] = None,
         kill_switch_enabled: Optional[bool] = False,
-    ) -> None:
+    ) -> str:
         """
         VPN Class method to connect to a VPN server using L2TP/IPsec protocol on macOS.
 
@@ -99,10 +104,13 @@ class MacOSL2TPConnector(IVpnConnector):
                 proc = await asyncio.create_subprocess_shell(enable_script)
                 await proc.communicate()
 
-            print(f"Connected to {server_ip} via L2TP: {stdout.decode().strip()}")
-            logger.info(f"Connected to {server_ip} via L2TP: {stdout.decode().strip()}")
+            logger.info(f"Connected to {self.current_vpn_ip} via L2TP: {stdout.decode().strip()}")
+
+            return_str = f"Connected to {self.current_vpn_ip} via L2TP successfully!"
+
+            return return_str
         except Exception as exc:
-            logger.error(f"Failed to connect to {server_ip} on macOS: {exc}")
+            logger.error(f"Failed to connect to {self.current_vpn_ip} on macOS: {exc}")
             raise exc
 
     async def disconnect(
@@ -111,7 +119,7 @@ class MacOSL2TPConnector(IVpnConnector):
         username: Optional[str] = None,
         password: Optional[str] = None,
         psk: Optional[str] = None,
-    ) -> None:
+    ) -> str:
         """
         Class method to disconnect from a VPN server on macOS.
 
@@ -123,7 +131,7 @@ class MacOSL2TPConnector(IVpnConnector):
             cmd = cmds_map_macos["disconnect_from_l2tp_service"] + [self.service_name]
 
             logger.info(
-                f"Stopping L2TP service '{self.service_name}' for IP={server_ip} with scutil."
+                f"Stopping L2TP service '{self.service_name}' for IP={self.current_vpn_ip} with scutil."
             )
 
             proc = await asyncio.create_subprocess_exec(
@@ -135,12 +143,13 @@ class MacOSL2TPConnector(IVpnConnector):
                 err = stderr.decode().strip()
                 raise RuntimeError(f"Failed to stop VPN on macOS: {err}")
 
-            print(
-                f"Disconnected VPN '{self.service_name}' from {server_ip}. Output: {stdout.decode().strip()}"
-            )
             logger.info(
-                f"Disconnected VPN '{self.service_name}' from {server_ip}. Output: {stdout.decode().strip()}"
+                f"Disconnected VPN '{self.service_name}' from {self.current_vpn_ip}. Output: {stdout.decode().strip()}"
             )
+
+            return_str = f"Disconnected VPN '{self.service_name}' successfully!"
+
+            return return_str
         except Exception as exc:
             logger.error(f"Failed to disconnect from {server_ip}: {exc}")
             raise

@@ -16,7 +16,7 @@ async def connect_to_vpn(
     server_ip: Optional[str] = None,
     connector: IVpnConnector = Depends(get_vpn_connector),
     kill_switch_enabled: Optional[bool] = False,
-) -> None:
+) -> str:
     """
     Connect to the given VPN server using L2TP/IPSec.
 
@@ -31,7 +31,7 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        await connector.connect(server_ip=server_ip, kill_switch_enabled=kill_switch_enabled)
+        return await connector.connect(server_ip=server_ip, kill_switch_enabled=kill_switch_enabled)
     except Exception as exc:
         return {"You've got an error in connect to vpn method, ": str(exc)}
 
@@ -40,7 +40,7 @@ async def connect_to_vpn(
 async def disconnect_from_vpn(
     server_ip: Optional[str] = None,
     connector: IVpnConnector = Depends(get_vpn_connector),
-) -> None:
+) -> str:
     """
     Disconnect from the given VPN server.
 
@@ -52,7 +52,7 @@ async def disconnect_from_vpn(
         Exception: If failed to disconnect.
     """
     try:
-        await connector.disconnect(server_ip=server_ip)
+        return await connector.disconnect(server_ip=server_ip)
     except Exception as exc:
         return {"You've got an error in disconnect from vpn method, ": str(exc)}
 
