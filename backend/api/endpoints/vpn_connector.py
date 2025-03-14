@@ -10,11 +10,12 @@ from utils.reusable.sort_directions import SortDirection
 
 router = APIRouter()
 
+connector_instance: IVpnConnector = get_vpn_connector()
+
 
 @router.post("/connect")
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
-    connector: IVpnConnector = Depends(get_vpn_connector),
     kill_switch_enabled: Optional[bool] = False,
 ) -> str:
     """
@@ -31,7 +32,9 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        return await connector.connect(server_ip=server_ip, kill_switch_enabled=kill_switch_enabled)
+        return await connector_instance.connect(
+            server_ip=server_ip, kill_switch_enabled=kill_switch_enabled
+        )
     except Exception as exc:
         return {"You've got an error in connect to vpn method, ": str(exc)}
 
@@ -39,7 +42,6 @@ async def connect_to_vpn(
 @router.post("/disconnect")
 async def disconnect_from_vpn(
     server_ip: Optional[str] = None,
-    connector: IVpnConnector = Depends(get_vpn_connector),
 ) -> str:
     """
     Disconnect from the given VPN server.
@@ -52,15 +54,13 @@ async def disconnect_from_vpn(
         Exception: If failed to disconnect.
     """
     try:
-        return await connector.disconnect(server_ip=server_ip)
+        return await connector_instance.disconnect(server_ip=server_ip)
     except Exception as exc:
         return {"You've got an error in disconnect from vpn method, ": str(exc)}
 
 
 @router.get("/status")
-async def check_vpn_status(
-    connector: IVpnConnector = Depends(get_vpn_connector),
-) -> str:
+async def check_vpn_status() -> str:
     """
     Check if the given server is connected or not.
 
@@ -72,15 +72,13 @@ async def check_vpn_status(
         str: The status of the VPN connection.
     """
     try:
-        return await connector.status()
+        return await connector_instance.status()
     except Exception as exc:
         return {"You've got an error in check vpn status method, ": str(exc)}
 
 
 @router.post("/enable_kill_switch")
-async def enable_kill_switch(
-    connector: IVpnConnector = Depends(get_vpn_connector),
-) -> None:
+async def enable_kill_switch() -> None:
     """
     Enable kill switch, blocking all traffic outside VPN.
 
@@ -91,15 +89,13 @@ async def enable_kill_switch(
         Exception: If failed to enable kill switch.
     """
     try:
-        await connector.enable_kill_switch()
+        return await connector_instance.enable_kill_switch()
     except Exception as exc:
         return {"You've got an error in enable kill switch method, ": str(exc)}
 
 
 @router.post("/disable_kill_switch")
-async def disable_kill_switch(
-    connector: IVpnConnector = Depends(get_vpn_connector),
-) -> None:
+async def disable_kill_switch() -> str:
     """
     Disable kill switch, restore normal network.
 
@@ -110,7 +106,7 @@ async def disable_kill_switch(
         Exception: If failed to disable kill switch.
     """
     try:
-        await connector.disable_kill_switch()
+        return await connector_instance.disable_kill_switch()
     except Exception as exc:
         return {"You've got an error in disable kill switch method, ": str(exc)}
 

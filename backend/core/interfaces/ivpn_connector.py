@@ -47,13 +47,13 @@ class IVpnConnector(Protocol):
         """
         ...
 
-    async def enable_kill_switch(self, server_ip: str) -> None:
+    async def enable_kill_switch(self, server_ip: str) -> str:
         """
         Enable kill switch, blocking all traffic outside VPN.
         """
         ...
 
-    async def disable_kill_switch(self, server_ip: str) -> None:
+    async def disable_kill_switch(self, server_ip: str) -> str:
         """
         Disable kill switch, restore normal network.
         """

@@ -61,57 +61,66 @@ class MacOSL2TPConnector(IVpnConnector):
         Raises:
             RuntimeError: If the connection fails.
         """
-        try:
-            #### OPENING NETWORK SETTINGS ####
-            logger.info("macOS: Opening Network Settings to let the user configure L2TP.")
-            await open_macos_network_settings()
+        if self.service_name is not None:
+            try:
+                #### OPENING NETWORK SETTINGS ####
+                logger.info("macOS: Opening Network Settings to let the user configure L2TP.")
+                await open_macos_network_settings()
 
-            #### CONNECTION TO 'MYL2TP' SERVICE ####
-            cmd = cmds_map_macos["connect_to_l2tp_service"] + [
-                self.service_name,
-                "--secret",
-                self.service_psk_value,
-            ]
+                #### CONNECTION TO 'MYL2TP' SERVICE ####
+                cmd = cmds_map_macos["connect_to_l2tp_service"] + [
+                    self.service_name,
+                    "--secret",
+                    self.service_psk_value,
+                ]
 
-            logger.info(f"Trying to start L2TP service '{self.service_name}' for IP={server_ip}")
-
-            proc = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await proc.communicate()
-
-            #### EXTRACTING VPN IP ADDRESS ####
-            self.current_vpn_ip = await extract_ip_address_from_service_name(self.service_name)
-
-            if not self.current_vpn_ip:
-                raise RuntimeError("Failed to extract VPN IP address. Cannot enable kill switch.")
-
-            if proc.returncode != 0:
-                err = stderr.decode().strip()
-                msg = (
-                    f"Failed to start VPN on macOS: {err}. "
-                    "Make sure you've created the L2TP service in System Settings -> Network."
+                logger.info(
+                    f"Trying to start L2TP service '{self.service_name}' for IP={server_ip}"
                 )
-                raise RuntimeError(msg)
 
-            #### ENABLE KILL SWITCH (MACOS) ####
-            if kill_switch_enabled:
-                logger.info("Enabling kill switch on macOS...")
-                logger.info(f"Current VPN IP: {self.current_vpn_ip}")
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await proc.communicate()
 
-                enable_script = await get_enable_kill_switch_script(self.current_vpn_ip)
+                #### EXTRACTING VPN IP ADDRESS ####
+                self.current_vpn_ip = await extract_ip_address_from_service_name(self.service_name)
 
-                proc = await asyncio.create_subprocess_shell(enable_script)
-                await proc.communicate()
+                if not self.current_vpn_ip:
+                    raise RuntimeError(
+                        "Failed to extract VPN IP address. Cannot enable kill switch."
+                    )
 
-            logger.info(f"Connected to {self.current_vpn_ip} via L2TP: {stdout.decode().strip()}")
+                if proc.returncode != 0:
+                    err = stderr.decode().strip()
+                    msg = (
+                        f"Failed to start VPN on macOS: {err}. "
+                        "Make sure you've created the L2TP service in System Settings -> Network."
+                    )
+                    raise RuntimeError(msg)
 
-            return_str = f"Connected to {self.current_vpn_ip} via L2TP successfully!"
+                #### ENABLE KILL SWITCH (MACOS) ####
+                if kill_switch_enabled:
+                    logger.info("Enabling kill switch on macOS...")
+                    logger.info(f"Current VPN IP: {self.current_vpn_ip}")
 
-            return return_str
-        except Exception as exc:
-            logger.error(f"Failed to connect to {self.current_vpn_ip} on macOS: {exc}")
-            raise exc
+                    enable_script = await get_enable_kill_switch_script(self.current_vpn_ip)
+
+                    proc = await asyncio.create_subprocess_shell(enable_script)
+                    await proc.communicate()
+
+                logger.info(
+                    f"Connected to {self.current_vpn_ip} via L2TP: {stdout.decode().strip()}"
+                )
+
+                return_str = f"Connected to {self.current_vpn_ip} via L2TP successfully!"
+
+                return return_str
+            except Exception as exc:
+                logger.error(f"Failed to connect to {self.current_vpn_ip} on macOS: {exc}")
+                raise exc
+        else:
+            return "No service name provided for the VPN connection."
 
     async def disconnect(
         self,
@@ -126,34 +135,40 @@ class MacOSL2TPConnector(IVpnConnector):
         Raises:
             RuntimeError: If the disconnection fails.
         """
-        try:
-            # DISCONNECTING FROM 'MYL2TP' SERVICE #
-            cmd = cmds_map_macos["disconnect_from_l2tp_service"] + [self.service_name]
+        if self.status() == "Connected" and self.current_vpn_ip:
+            try:
+                # DISCONNECTING FROM 'MYL2TP' SERVICE #
+                cmd = cmds_map_macos["disconnect_from_l2tp_service"] + [self.service_name]
 
-            logger.info(
-                f"Stopping L2TP service '{self.service_name}' for IP={self.current_vpn_ip} with scutil."
-            )
+                logger.info(
+                    f"Stopping L2TP service '{self.service_name}' for IP={self.current_vpn_ip} with scutil."
+                )
 
-            proc = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await proc.communicate()
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await proc.communicate()
 
-            if proc.returncode != 0:
-                err = stderr.decode().strip()
-                raise RuntimeError(f"Failed to stop VPN on macOS: {err}")
+                if proc.returncode != 0:
+                    err = stderr.decode().strip()
+                    raise RuntimeError(f"Failed to stop VPN on macOS: {err}")
 
-            logger.info(
-                f"Disconnected VPN '{self.service_name}' from {self.current_vpn_ip}. Output: {stdout.decode().strip()}"
-            )
+                logger.info(
+                    f"Disconnected VPN '{self.service_name}' from {self.current_vpn_ip}. Output: {stdout.decode().strip()}"
+                )
 
-            return_str = f"Disconnected VPN '{self.service_name}' successfully!"
+                return_str = f"Disconnected VPN '{self.service_name}' from {self.current_vpn_ip} successfully!"
 
-            return return_str
-        except Exception as exc:
-            logger.error(f"Failed to disconnect from {server_ip}: {exc}")
-            raise
+                self.current_vpn_ip = None
 
+                return return_str
+            except Exception as exc:
+                logger.error(f"Failed to disconnect from {self.service_name}: {exc}")
+                raise
+        else:
+            return "No active VPN connection to disconnect from."
+
+    # TODO: doesn't work
     async def status(
         self,
         server_ip: Optional[str] = None,
@@ -196,14 +211,13 @@ class MacOSL2TPConnector(IVpnConnector):
         username: Optional[str] = None,
         password: Optional[str] = None,
         psk: Optional[str] = None,
-    ) -> Optional[str]:
+    ) -> str:
         """
         Class method to enable a kill switch on macOS.
 
         Raises:
             RuntimeError: If the kill switch fails to enable.
         """
-        print("Current VPN IP: ", self.current_vpn_ip)
         try:
             # ENABLE KILL SWITCH (MACOS)#
             if not self.current_vpn_ip:
@@ -217,7 +231,7 @@ class MacOSL2TPConnector(IVpnConnector):
 
             await proc.communicate()
 
-            return "Kill switch has been enables successfully!"
+            return f"Kill switch has been enabled successfully for {self.current_vpn_ip}!"
         except Exception as exc:
             logger.error(f"Failed to enable kill switch on macOS: {exc}")
             raise exc
@@ -243,7 +257,7 @@ class MacOSL2TPConnector(IVpnConnector):
             proc = await asyncio.create_subprocess_shell(disable_kill_switch_script)
             await proc.communicate()
 
-            return "Kill switch has been disabled successfully!"
+            return f"Kill switch has been disabled successfully!"
         except Exception as exc:
             logger.error(f"Failed to disable kill switch on macOS: {exc}")
             raise exc
