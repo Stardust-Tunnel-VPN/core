@@ -46,7 +46,7 @@ class MacOSL2TPConnector(IVpnConnector):
         self.current_vpn_ip = current_vpn_ip
 
     # TODO: extract repeated vars to reusable-utils
-
+    # TODO: make sure that connection HAS BEEN established successfully, because here we have the return statement "it's okay" after the command execution, but it still does not guarantee that connection will be established successfully.
     async def connect(
         self,
         server_ip: Optional[str] = None,
@@ -184,7 +184,7 @@ class MacOSL2TPConnector(IVpnConnector):
         """
         try:
             # CHECKING STATUS OF 'MYL2TP' SERVICE #
-            cmd = cmds_map_macos["check_vpn_status"] + [self.service_name]
+            cmd = cmds_map_macos["check_connection_status"] + [self.service_name]
 
             logger.info(f"Checking VPN status on macOS: {cmd}")
             proc = await asyncio.create_subprocess_exec(
