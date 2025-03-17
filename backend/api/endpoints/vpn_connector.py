@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 
 from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
+from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
 from utils.reusable.sort_directions import SortDirection
@@ -32,9 +33,13 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        return await connector_instance.connect(
-            server_ip=server_ip, kill_switch_enabled=kill_switch_enabled
-        )
+        result = await connector_instance.connect(server_ip=server_ip)
+
+        if kill_switch_enabled:
+            if isinstance(connector_instance, MacOSL2TPConnector):
+                connector_instance.start_kill_switch_monitor(interval=2.0)
+
+        return result
     except Exception as exc:
         return {"You've got an error in connect to vpn method, ": str(exc)}
 
@@ -54,6 +59,9 @@ async def disconnect_from_vpn(
         Exception: If failed to disconnect.
     """
     try:
+        # if isinstance(connector_instance, MacOSL2TPConnector):
+        #     connector_instance.stop_kill_switch_monitor()
+
         return await connector_instance.disconnect(server_ip=server_ip)
     except Exception as exc:
         return {"You've got an error in disconnect from vpn method, ": str(exc)}

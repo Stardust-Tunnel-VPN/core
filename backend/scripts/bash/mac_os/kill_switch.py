@@ -11,6 +11,8 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+SCRIPTS_DIR = pathlib.Path(__file__).parent.absolute()
+
 
 class ScriptsNames(Enum):
     """
@@ -21,7 +23,13 @@ class ScriptsNames(Enum):
     DISABLE_KILL_SWITCH = "disable_kill_switch.sh"
 
 
-SCRIPTS_DIR = pathlib.Path(__file__).parent.absolute()
+class ConfScriptsPaths(Enum):
+    """
+    Enum class for bash script paths.
+    """
+
+    BLOCK_ALL_CONF = (SCRIPTS_DIR / "blockall.conf").as_posix()
+    PASS_ALL_CONF = (SCRIPTS_DIR / "passall.conf").as_posix()
 
 
 async def enable_kill_switch() -> str:

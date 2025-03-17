@@ -155,6 +155,7 @@ class Packer:
         try:
             filtered_data = []
             for row in data:
+                # TODO: extract restricted countries list to a separate variable
                 if row.get("CountryShort", "") not in ["RU", "IR"]:
                     filtered_data.append(row)
             return filtered_data
