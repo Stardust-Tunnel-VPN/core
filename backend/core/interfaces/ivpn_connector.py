@@ -32,7 +32,13 @@ class IVpnConnector(Protocol):
         """
         ...
 
-    async def disconnect(self, server_ip: Optional[str]) -> str:
+    async def disconnect(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         Asynchronously disconnect from the given VPN server.
         :param server_ip: The VPN server IP or name used previously
@@ -40,20 +46,38 @@ class IVpnConnector(Protocol):
         """
         ...
 
-    async def status(self, server_ip: str) -> str:
+    async def status(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         Check if the given server is connected or not.
         :returns: 'connected', 'disconnected', or 'unknown'
         """
         ...
 
-    async def enable_kill_switch(self, server_ip: str) -> str:
+    async def enable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         Enable kill switch, blocking all traffic outside VPN.
         """
         ...
 
-    async def disable_kill_switch(self, server_ip: str) -> str:
+    async def disable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         Disable kill switch, restore normal network.
         """

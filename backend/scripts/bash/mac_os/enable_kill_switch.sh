@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Only God knows what this script does.
+
 # enable_kill_switch.sh
 #
 # Must be run with bash (not sh)!

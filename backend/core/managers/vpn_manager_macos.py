@@ -13,7 +13,7 @@ from configuration.macos_l2tp_connection import (
     open_macos_network_settings,
 )
 from core.interfaces.ivpn_connector import IVpnConnector
-from scripts.bash.kill_switch import enable_kill_switch, disable_kill_switch
+from scripts.bash.mac_os.kill_switch import disable_kill_switch, enable_kill_switch
 from utils.reusable.commands.macos.reusable_commands_map import cmds_map_macos
 
 logger = logging.getLogger(__name__)

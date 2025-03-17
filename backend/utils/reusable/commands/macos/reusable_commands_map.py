@@ -4,7 +4,6 @@ Python module that stores the mapping of reusable terminal commands for VPN exec
 
 from typing import Dict, List
 
-
 """
 Map of reusable terminal commands for VPN execution on macOS
 
