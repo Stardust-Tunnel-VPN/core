@@ -1,1 +1,0 @@
-I plan to add different connection configurations here since the application works only with I2 Tunnel protocol for now. Later I'll try to add Open VPN connection configuration and some other.

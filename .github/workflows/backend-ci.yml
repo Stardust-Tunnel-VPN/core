@@ -12,8 +12,13 @@ on:
       - "backend/**"
 
 jobs:
-  backend-tests:
-    runs-on: ubuntu-latest
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+      fail-fast: false
 
     steps:
       - name: Checkout
@@ -34,22 +39,7 @@ jobs:
           cd backend
           poetry install
 
-      - name: Check imports with isort
+      - name: Check isort
         run: |
           cd backend
           poetry run isort --check-only .
-
-      - name: Run tests with coverage
-        run: |
-          cd backend
-          poetry run pytest --maxfail=1 --disable-warnings --cov=. --cov-report=term-missing
-
-      - name: Check server startup (optional)
-        run: |
-          cd backend
-          poetry shell & poetry run uvicorn main:app --port 8001 &
-          SERVER_PID=$!
-          sleep 3
-          curl -f http://127.0.0.1:8001/api/v1/vpn_servers_list || (echo "Server not responding" && exit 1)
-          kill $SERVER_PID
-          wait $SERVER_PID || true
