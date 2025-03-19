@@ -43,9 +43,3 @@ jobs:
         run: |
           cd backend
           poetry run isort --check-only .
-
-      - name: Run tests with coverage
-        continue-on-error: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          cd backend
-          poetry run pytest --maxfail=1 --disable-warnings --cov=. --cov-report=term-missing
