@@ -17,7 +17,7 @@ connector_instance: IVpnConnector = get_vpn_connector()
 @router.post("/connect")
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
-    kill_switch_enabled: Optional[bool] = False,
+    kill_switch_enabled: Optional[bool] = True,
 ) -> str:
     """
     Connect to the given VPN server using L2TP/IPSec.

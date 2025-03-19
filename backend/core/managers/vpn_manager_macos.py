@@ -31,8 +31,8 @@ class MacOSL2TPConnector(IVpnConnector):
     - connect ✅
     - disconnect ✅
     - status ✅
-    - enable_kill_switch ✅ (not tested yet)
-    - disable_kill_switch ✅ (not tested yet)
+    - enable_kill_switch ✅
+    - disable_kill_switch ✅
     """
 
     def __init__(
@@ -96,9 +96,9 @@ class MacOSL2TPConnector(IVpnConnector):
             # EXTRACTING VPN IP ADDRESS (just for reference)
             self.current_vpn_ip = await extract_ip_address_from_service_name(self.service_name)
 
-            # WAIT UP TO 10 SECONDS FOR ACTUAL "CONNECTED" STATUS
+            # WAIT UP TO 20 SECONDS FOR ACTUAL "CONNECTED" STATUS
             connected = False
-            for _ in range(10):
+            for _ in range(20):
                 st = await self.status()
                 if st.lower() == "connected":
                     connected = True
@@ -107,7 +107,7 @@ class MacOSL2TPConnector(IVpnConnector):
 
             if not connected:
                 raise RuntimeError(
-                    "VPN did not become 'Connected' after 10s. Possibly failed to establish."
+                    "VPN did not become 'Connected' after 20s. Possibly failed to establish."
                 )
 
             # If we reach here, VPN is "Connected"
