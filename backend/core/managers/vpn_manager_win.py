@@ -10,6 +10,8 @@ from typing import Optional
 
 from configuration.win_l2tp_connection import create_windows_l2tp
 from core.interfaces.ivpn_connector import IVpnConnector
+from utils.reusable.commands.windows.reusable_commands_map import \
+    cmds_map_windows
 
 logger = logging.getLogger(__name__)
 
@@ -24,28 +26,39 @@ class WindowsL2TPConnector(IVpnConnector):
         self.connection_name = connection_name
 
     async def connect(
-        self, server_ip: str, username: str = "vpn", password: str = "vpn", psk: str = "vpn"
+        self,
+        server_ip: str,
+        username: str = "vpn",
+        password: str = "vpn",
+        psk: str = "vpn",
     ) -> None:
         """
-        Windows connector class method that connects to a VPN server using L2TP/IPsec protocol.
+        Windows connector class method that connects to a VPN server (vpngate.net) using L2TP/IPsec protocol.
 
         Args:
             server_ip (str): The IP address of the VPN server.
-            username (str): The username for the VPN connection. Defaults to "vpn".
-            password (str): The password for the VPN connection. Defaults to "vpn".
-            psk (str): The pre-shared key for the connection. Defaults to "vpn".
+            username (str): The username for the VPN connection. Defaults to "vpn". (vpngate.net)
+            password (str): The password for the VPN connection. Defaults to "vpn". (vpngate.net)
+            psk (str): The pre-shared key for the connection. Defaults to "vpn". (vpngate.net)
 
         Raises:
             RuntimeError: If the connection fails.
         """
         try:
-
+            # TODO: maybe do it separately ?
             # CREATE VPN PROFILE #
             await create_windows_l2tp(server_ip, name=self.connection_name, psk=psk)
 
             # CONNECTION #
-            cmd = ["rasdial", connection_name, username, password]
-            logger.info(f"WindowsL2TPConnector: connecting to {server_ip} with cmd: {cmd}")
+            cmd = cmds_map_windows["connect_to_l2tp_service"] + [
+                self.connection_name,
+                username,
+                password,
+            ]
+
+            logger.info(
+                f"WindowsL2TPConnector: connecting to {server_ip} with cmd: {cmd}"
+            )
 
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -54,8 +67,12 @@ class WindowsL2TPConnector(IVpnConnector):
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
-                logger.error(f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}")
-                raise RuntimeError(f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}")
+                logger.error(
+                    f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}"
+                )
+                raise RuntimeError(
+                    f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}"
+                )
 
         except Exception as exc:
             logger.error(f"Failed to connect to {server_ip}: {exc}")
@@ -73,8 +90,15 @@ class WindowsL2TPConnector(IVpnConnector):
         """
         try:
             # DISCONNECT #
-            cmd = ["rasdial", self.connection_name, "/disconnect"]
-            logger.info(f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}")
+
+            cmd = cmds_map_windows["disconnect_from_l2tp_service"] + [
+                self.connection_name
+            ]
+
+            logger.info(
+                f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}"
+            )
+
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
@@ -100,9 +124,8 @@ class WindowsL2TPConnector(IVpnConnector):
             str: The status of the VPN connection.
         """
         try:
-
             # STATUS #
-            cmd = ["rasdial"]
+            cmd = cmds_map_windows["check_connection_status"]
 
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -112,7 +135,10 @@ class WindowsL2TPConnector(IVpnConnector):
 
             output = stdout.decode().lower()
 
-            if self.connection_name.lower in output and "command completed successfully" in output:
+            if (
+                self.connection_name.lower in output
+                and "command completed successfully" in output
+            ):
                 return "connected"
             else:
                 return "disconnected"
