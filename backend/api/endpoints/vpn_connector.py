@@ -5,20 +5,24 @@ from fastapi import APIRouter, Depends
 from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
+from core.managers.vpn_manager_win import WindowsL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
 from utils.reusable.sort_directions import SortDirection
+
+import logging
 
 router = APIRouter()
 
 connector_instance: IVpnConnector = get_vpn_connector()
 
 
+# TODO: pass the server-ip logic to pydantic
 @router.post("/connect")
 async def connect_to_vpn(
-    server_ip: Optional[str] = None,
-    kill_switch_enabled: Optional[bool] = True,
-) -> str:
+    server_ip: str,
+    kill_switch_enabled: Optional[bool] = False,
+):
     """
     Connect to the given VPN server using L2TP/IPSec.
 
@@ -33,15 +37,25 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        result = await connector_instance.connect(server_ip=server_ip)
+
+        if isinstance(connector_instance, WindowsL2TPConnector):
+            print("Ip: ", server_ip)
+            result = connector_instance.connect(server_ip=server_ip)
+        elif isinstance(connector_instance, MacOSL2TPConnector):
+            result = await connector_instance.connect(server_ip=server_ip)
+        else:
+            raise Exception("Unsupported OS")
 
         if kill_switch_enabled:
             if isinstance(connector_instance, MacOSL2TPConnector):
                 connector_instance.start_kill_switch_monitor(interval=2.0)
+            elif isinstance(connector_instance, WindowsL2TPConnector):
+                connector_instance.enable_kill_switch(server_ip=server_ip)
 
         return result
     except Exception as exc:
-        return {"You've got an error in connect to vpn method, ": str(exc)}
+        logging.exception("Failed to connect to VPN")
+        return {"error": f"Could not connect: {exc}"}
 
 
 @router.post("/disconnect")
@@ -68,7 +82,7 @@ async def disconnect_from_vpn(
 
 
 @router.get("/status")
-async def check_vpn_status() -> str:
+async def check_vpn_status(server_ip: Optional[str] = None) -> str:
     """
     Check if the given server is connected or not.
 
@@ -80,7 +94,7 @@ async def check_vpn_status() -> str:
         str: The status of the VPN connection.
     """
     try:
-        return await connector_instance.status()
+        return await connector_instance.status(server_ip=server_ip)
     except Exception as exc:
         return {"You've got an error in check vpn status method, ": str(exc)}
 

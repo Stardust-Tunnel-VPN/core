@@ -17,17 +17,26 @@ cmds_map_windows: Dict[str, List[str]] = {
     "create_windows_l2tp_connection": [
         "powershell",
         "-Command",
-        "Add-VpnConnection -Name '{name}' -ServerAddress '{server_ip}' -TunnelType L2TP -L2tpPsk '{psk}' -AuthenticationMethod Pap,CHAP,MSCHAPv2 -AllUserConnection -Force",
+        r"""
+    try {
+        Import-Module RemoteAccess -ErrorAction SilentlyContinue
+
+        Add-VpnConnection -Name '{name}' -ServerAddress '{server_ip}' -TunnelType L2TP -L2tpPsk '{psk}' `
+            -AuthenticationMethod Pap,CHAP,MSCHAPv2 -AllUserConnection -Force -ErrorAction Stop
+
+        Write-Host "Add-VpnConnection completed successfully."
+    }
+    catch {
+        Write-Host ("Error: " + $_.Exception.Message)
+        exit 1
+    }
+    """,
     ],
     "connect_to_l2tp_service": [
         "rasdial",
-        "{connection_name}",
-        "{username}",
-        "{password}",
     ],
     "disconnect_from_l2tp_service": [
         "rasdial",
-        "{connection_name}",
         "/DISCONNECT",
     ],
     "check_connection_status": [
