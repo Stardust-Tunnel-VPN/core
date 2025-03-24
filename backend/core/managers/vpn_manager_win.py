@@ -2,6 +2,7 @@
 
 import subprocess
 import logging
+import asyncio
 from typing import Optional
 
 from configuration.win_l2tp_connection import create_windows_l2tp
@@ -20,12 +21,12 @@ class WindowsL2TPConnector(IVpnConnector):
     def __init__(self, connection_name: str = "MyL2TP"):
         self.connection_name = connection_name
 
-    def connect(
+    def _connect_sync(
         self,
-        server_ip: Optional[str] = None,
-        username: Optional[str] = "vpn",
-        password: Optional[str] = "vpn",
-        psk: Optional[str] = "vpn",
+        server_ip: str,
+        username: str,
+        password: str,
+        psk: str,
         kill_switch_enabled: bool = False,
     ) -> str:
         try:
@@ -34,16 +35,17 @@ class WindowsL2TPConnector(IVpnConnector):
 
             create_windows_l2tp(server_ip=server_ip, name=self.connection_name, psk=psk)
 
-            cmd = cmds_map_windows["connect_to_l2tp_service"] + [
-                self.connection_name,
-                username,
-                password,
-            ]
+            # TODO: extract to a separate method/function
+            cmd = cmds_map_windows["connect_to_l2tp_service"][:]
+            final_username = username or "vpn"
+            final_password = password or "vpn"
+            cmd += [self.connection_name, final_username, final_password]
 
             if kill_switch_enabled:
                 self.enable_kill_switch(server_ip)
 
             logger.info(f"WindowsL2TPConnector: connecting with command: {cmd}")
+
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 raise RuntimeError(f"rasdial failed: {result.stdout or result.stderr}")
@@ -54,7 +56,28 @@ class WindowsL2TPConnector(IVpnConnector):
             logger.error(f"Failed to connect to {server_ip}: {exc}")
             raise exc
 
-    def disconnect(
+    async def connect(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = "vpn",
+        password: Optional[str] = "vpn",
+        psk: Optional[str] = "vpn",
+        kill_switch_enabled: bool = False,
+    ) -> str:
+        try:
+
+            if kill_switch_enabled:
+                self.enable_kill_switch(server_ip)
+
+            return await asyncio.to_thread(
+                self._connect_sync, server_ip, username, password, psk, kill_switch_enabled
+            )
+
+        except Exception as exc:
+            logger.error(f"Failed to connect to {server_ip}: {exc}")
+            raise exc
+
+    def _disconnect_sync(
         self,
         server_ip: Optional[str] = None,
         username: Optional[str] = None,
@@ -65,7 +88,9 @@ class WindowsL2TPConnector(IVpnConnector):
         Disconnect from the VPN.
         """
         try:
-            cmd = cmds_map_windows["disconnect_from_l2tp_service"] + [self.connection_name]
+            # TODO: extract to a separate method/function
+            cmd = cmds_map_windows["disconnect_from_l2tp_service"][:]
+            cmd += [self.connection_name]
 
             logger.info(f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}")
 
@@ -80,7 +105,22 @@ class WindowsL2TPConnector(IVpnConnector):
             logger.error(f"Failed to disconnect from {server_ip}: {exc}")
             raise exc
 
-    def status(
+    async def disconnect(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
+        try:
+            return await asyncio.to_thread(
+                self._disconnect_sync, server_ip, username, password, psk
+            )
+        except Exception as exc:
+            logger.error(f"Failed to disconnect from {server_ip}: {exc}")
+            raise exc
+
+    def _status_check_sync(
         self,
         server_ip: Optional[str] = None,
         username: Optional[str] = None,
@@ -91,7 +131,10 @@ class WindowsL2TPConnector(IVpnConnector):
         Check if the VPN connection is active or not.
         """
         try:
-            cmd = cmds_map_windows["check_connection_status"]
+            # TODO: extract to a separate method/function
+            cmd = cmds_map_windows["check_connection_status"][:]
+            cmd += [self.connection_name]
+
             result = subprocess.run(cmd, capture_output=True, text=True)
 
             output = result.stdout.lower()
@@ -109,10 +152,36 @@ class WindowsL2TPConnector(IVpnConnector):
             logger.error(f"Failed to get status for {server_ip}: {exc}")
             raise exc
 
-    def enable_kill_switch(self, server_ip: str) -> None:
+    async def status(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
+        try:
+            return await asyncio.to_thread(
+                self._status_check_sync, server_ip, username, password, psk
+            )
+        except Exception as exc:
+            logger.error(f"Failed to get status for {server_ip}: {exc}")
+            raise exc
+
+    def enable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         A naive kill-switch via netsh advfirewall.
         Blocks all outbound traffic except the VPN server IP.
+
+        Args:
+            server_ip (str): The VPN server IP.
+        Returns:
+            str: Success message.
         """
         try:
             logger.info(f"Enabling kill switch on Windows for {server_ip}...")
@@ -149,13 +218,27 @@ class WindowsL2TPConnector(IVpnConnector):
                     f"Failed to allow {server_ip}: {res_allow.stdout or res_allow.stderr}"
                 )
 
+            return "Kill switch enabled successfully."
+
         except Exception as exc:
             logger.error(f"Failed to enable kill switch: {exc}")
             raise exc
 
-    def disable_kill_switch(self, server_ip: str) -> None:
+    def disable_kill_switch(
+        self,
+        server_ip: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        psk: Optional[str] = None,
+    ) -> str:
         """
         Remove kill-switch rules.
+
+        Args:
+            server_ip (str): The VPN server IP.
+
+        Returns:
+            str: Success message.
         """
         try:
             logger.info("Disabling kill switch on Windows.")
@@ -180,6 +263,7 @@ class WindowsL2TPConnector(IVpnConnector):
             ]
             res_allow = subprocess.run(remove_allow, capture_output=True, text=True)
 
+            return "Kill switch disabled successfully."
         except Exception as exc:
             logger.error(f"Failed to disable kill switch: {exc}")
             raise exc
