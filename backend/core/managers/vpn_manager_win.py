@@ -88,6 +88,8 @@ class WindowsL2TPConnector(IVpnConnector):
         Disconnect from the VPN.
         """
         try:
+            if not server_ip:
+                raise ValueError("server_ip cannot be None or empty.")
             # TODO: extract to a separate method/function
             cmd = cmds_map_windows["disconnect_from_l2tp_service"][:]
             cmd += [self.connection_name]
@@ -113,6 +115,7 @@ class WindowsL2TPConnector(IVpnConnector):
         psk: Optional[str] = None,
     ) -> str:
         try:
+
             return await asyncio.to_thread(
                 self._disconnect_sync, server_ip, username, password, psk
             )
@@ -184,6 +187,9 @@ class WindowsL2TPConnector(IVpnConnector):
             str: Success message.
         """
         try:
+            if not server_ip:
+                raise ValueError("server_ip cannot be None or empty.")
+
             logger.info(f"Enabling kill switch on Windows for {server_ip}...")
 
             block_cmd = [
