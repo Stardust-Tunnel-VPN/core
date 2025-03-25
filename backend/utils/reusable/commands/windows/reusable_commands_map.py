@@ -37,7 +37,6 @@ cmds_map_windows: Dict[str, List[str]] = {
     ],
     "disconnect_from_l2tp_service": [
         "rasdial",
-        "/DISCONNECT",
     ],
     "check_connection_status": [
         "rasdial",

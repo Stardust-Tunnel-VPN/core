@@ -14,12 +14,25 @@ logger = logging.getLogger(__name__)
 
 class WindowsL2TPConnector(IVpnConnector):
     """
-    Use rasdial for connect/disconnect,
-    and netsh advfirewall for kill switch.
+    For Windows OS:
+      All sort of things and tricks, fortunately, we can do programmatically in compare to Apple.
+
+      It uses 'rasdial' tool under the hood. More info about rasdial here:
+
+      https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/ff859533(v=ws.11)
+
+    METHODS THAT SHOULD BE IMPLEMENTED ACCORDING TO IVpnConnector:
+    - connect ✅
+    - disconnect ✅
+    - status ✅
+    - enable_kill_switch ? (haven't tested yet)
+    - disable_kill_switch ? (haven't tested yet)
     """
 
     def __init__(self, connection_name: str = "MyL2TP"):
         self.connection_name = connection_name
+        self.is_connected: Optional[bool] = False
+        self.established_server_ip: Optional[str] = False
 
     def _connect_sync(
         self,
@@ -29,6 +42,12 @@ class WindowsL2TPConnector(IVpnConnector):
         psk: str,
         kill_switch_enabled: bool = False,
     ) -> str:
+        """
+        VPN Class method to connect to a VPN server using L2TP/IPsec protocol on Windows. This is syncr-wrapper that uses subproccess lib in order to execute commands in powershell.
+
+        Raises:
+            RuntimeError: If the connection fails.
+        """
         try:
             if not server_ip:
                 raise ValueError("server_ip cannot be None or empty.")
@@ -37,8 +56,8 @@ class WindowsL2TPConnector(IVpnConnector):
 
             # TODO: extract to a separate method/function
             cmd = cmds_map_windows["connect_to_l2tp_service"][:]
-            final_username = username or "vpn"
-            final_password = password or "vpn"
+            final_username = username
+            final_password = password
             cmd += [self.connection_name, final_username, final_password]
 
             if kill_switch_enabled:
@@ -65,17 +84,25 @@ class WindowsL2TPConnector(IVpnConnector):
         kill_switch_enabled: bool = False,
     ) -> str:
         try:
+            """
+            VPN Class method to connect to a VPN server using L2TP/IPsec protocol on Windows. It uses asyncio-thread as a final stage to make this method call in async style.
 
+            Raises:
+                RuntimeError: If the connection fails.
+            """
             if kill_switch_enabled:
                 self.enable_kill_switch(server_ip)
 
             return await asyncio.to_thread(
                 self._connect_sync, server_ip, username, password, psk, kill_switch_enabled
             )
-
         except Exception as exc:
             logger.error(f"Failed to connect to {server_ip}: {exc}")
             raise exc
+        finally:
+            self.is_connected = True
+            self.established_server_ip = server_ip
+            print("Connected status", self.is_connected)
 
     def _disconnect_sync(
         self,
@@ -85,14 +112,18 @@ class WindowsL2TPConnector(IVpnConnector):
         psk: Optional[str] = None,
     ) -> str:
         """
-        Disconnect from the VPN.
+        Class method to disconnect from a VPN server on Windows. This is syncr-wrapper that uses subproccess lib in order to execute commands in powershell.
+
+        Raises:
+            RuntimeError: If the disconnection fails.
         """
         try:
-            if not server_ip:
-                raise ValueError("server_ip cannot be None or empty.")
+            if not self.is_connected:
+                raise ValueError("VPN Connection hasn't been established yet!")
+
             # TODO: extract to a separate method/function
             cmd = cmds_map_windows["disconnect_from_l2tp_service"][:]
-            cmd += [self.connection_name]
+            cmd += [self.connection_name, "/disconnect"]
 
             logger.info(f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}")
 
@@ -114,14 +145,21 @@ class WindowsL2TPConnector(IVpnConnector):
         password: Optional[str] = None,
         psk: Optional[str] = None,
     ) -> str:
-        try:
+        """
+        Class method to disconnect from a VPN server on Windows. It uses asyncio-thread as a final stage to make this method call in async style.
 
+        Raises:
+            RuntimeError: If the disconnection fails.
+        """
+        try:
             return await asyncio.to_thread(
                 self._disconnect_sync, server_ip, username, password, psk
             )
         except Exception as exc:
             logger.error(f"Failed to disconnect from {server_ip}: {exc}")
             raise exc
+        finally:
+            self.is_connected = False
 
     def _status_check_sync(
         self,
@@ -131,7 +169,10 @@ class WindowsL2TPConnector(IVpnConnector):
         psk: Optional[str] = None,
     ) -> str:
         """
-        Check if the VPN connection is active or not.
+        Class method to check the status of a VPN connection on Windows. This is syncr-wrapper that uses subproccess lib in order to execute commands in powershell.
+
+        Returns:
+            str: The status of the VPN connection.
         """
         try:
             # TODO: extract to a separate method/function
@@ -146,9 +187,7 @@ class WindowsL2TPConnector(IVpnConnector):
                 self.connection_name.lower() in output
                 and "command completed successfully" in output
             ):
-                return (
-                    f"Connected to {self.connection_name} successfully. Connection IP: {server_ip}"
-                )
+                return f"Connected to {self.connection_name} successfully. Connection IP: {self.established_server_ip}"
             else:
                 return f"Disconnected"
         except Exception as exc:
@@ -162,6 +201,12 @@ class WindowsL2TPConnector(IVpnConnector):
         password: Optional[str] = None,
         psk: Optional[str] = None,
     ) -> str:
+        """
+        Class method to check the status of a VPN connection on Windows. It uses asyncio-thread as a final stage to make this method call in async style.
+
+        Returns:
+            str: The status of the VPN connection.
+        """
         try:
             return await asyncio.to_thread(
                 self._status_check_sync, server_ip, username, password, psk

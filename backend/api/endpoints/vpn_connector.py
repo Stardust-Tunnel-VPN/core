@@ -20,9 +20,9 @@ connector_instance: IVpnConnector = get_vpn_connector()
 @router.post("/connect")
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    psk: Optional[str] = None,
+    username: Optional[str] = "vpn",
+    password: Optional[str] = "vpn",
+    psk: Optional[str] = "vpn",
     kill_switch_enabled: Optional[bool] = False,
 ):
     """
