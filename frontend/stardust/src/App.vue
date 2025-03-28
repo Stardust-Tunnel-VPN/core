@@ -11,7 +11,7 @@ import Home from '@/views/Home.vue'
 <template>
   <header>
     <div class="wrapper">
-      <Navbar show-logo />
+      <Navbar showLogo />
     </div>
   </header>
   <Home />

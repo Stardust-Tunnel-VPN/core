@@ -1,6 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 // src/**/*.{vue,js,ts,jsx,tsx}
+// this is taliwnd3 config file. In this project we use tailwind 4th version that doesn't support this configuration anymore. Soon we'll have to get rid of this file probably since it absolutely useless.
 module.exports = {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   plugins: [require('@headlessui/tailwindcss')],
   safelist: [
@@ -151,9 +153,6 @@ module.exports = {
           500: '#FAFBFC',
           600: '#F2F3F5',
         },
-        black: '#000000',
-        white: '#ffffff',
-        disabled: '#DADEE6',
       },
 
       fontSize: {

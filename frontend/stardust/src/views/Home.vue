@@ -1,7 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import ServersList from '@/components/ServersList.vue'
+</script>
 
 <template>
-  <body class="h-screen bg-gradient-to-b from-gray-50 to-gray-100"></body>
+  <body class="bg-bg-secondary h-screen">
+    <ServersList />
+  </body>
 </template>
 
 <style scoped></style>
