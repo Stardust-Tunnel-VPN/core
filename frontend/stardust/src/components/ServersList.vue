@@ -2,7 +2,6 @@
 import Frame from '@/components/Frame.vue'
 import ConnectionLogs from '@/components/ConnectionLogs.vue'
 import ConnectionButton from '@/components/Buttons/ConnectionButton.vue'
-import Icon from '@/components/Icon.vue'
 </script>
 
 <template>
