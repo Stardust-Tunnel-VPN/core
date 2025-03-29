@@ -30,12 +30,12 @@ export const useVpnServersStore = defineStore('vpnServers', {
   },
 
   actions: {
-    async fetchServers() {
+    async fetchServers(search?: string, sortBy?: string, sortDirection?: SortDirection) {
       this.loading = true
       this.error = null
 
       try {
-        this.servers = await httpClient.getVpnServers()
+        this.servers = await httpClient.getVpnServers(search, sortBy, sortDirection)
       } catch (error: unknown) {
         if (error instanceof Error) {
           this.error = error.message

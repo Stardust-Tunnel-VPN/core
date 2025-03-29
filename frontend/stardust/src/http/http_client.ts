@@ -18,7 +18,7 @@ export enum SortDirection {
 export class StardustHttpClient {
   private axiosInstance: AxiosInstance
 
-  constructor(baseUrl: string = 'http://127.0.0.1:8000') {
+  constructor(baseUrl: string = '/api/v1') {
     this.axiosInstance = axios.create({
       baseURL: baseUrl,
     })
