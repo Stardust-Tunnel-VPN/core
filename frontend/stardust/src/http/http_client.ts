@@ -38,13 +38,13 @@ export class StardustHttpClient {
       }
       const response = await this.axiosInstance.post<string>('/connect', null, { params })
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -60,13 +60,13 @@ export class StardustHttpClient {
       }
       const response = await this.axiosInstance.post<string>('/disconnect', null, { params })
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -78,13 +78,13 @@ export class StardustHttpClient {
     try {
       const response = await this.axiosInstance.get<string>('/status')
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -96,13 +96,13 @@ export class StardustHttpClient {
     try {
       const response = await this.axiosInstance.post<string>('/enable_kill_switch')
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -114,13 +114,13 @@ export class StardustHttpClient {
     try {
       const response = await this.axiosInstance.post<string>('/disable_kill_switch')
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -146,13 +146,13 @@ export class StardustHttpClient {
         params,
       })
       return response.data
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
-      throw new Error(`HTTP error: ${error.message}`)
+      throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 }
