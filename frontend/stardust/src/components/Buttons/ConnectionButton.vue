@@ -2,30 +2,29 @@
 import { defineProps, computed } from 'vue'
 import Icon from '@/components/Icon.vue'
 
-const props = defineProps<{
-  text: string
-  size?: string
-  leftIcon?: string
-  rightIcon?: string
-}>()
-
 // TODO - do it later based on connected-store
 
+// based on the store state of course
 const isConnected = computed(() => {
-  return props.text === 'Disconnect'
-})
-
-const bgColor = computed(() => {
-  return isConnected.value ? 'bg-connected' : 'bg-disconnected'
+  return true
 })
 </script>
 
 <template>
   <div
-    :class="bgColor"
-    class="w-full max-w-[150px] h-[35px] px-4 py-2 rounded-sm border border-border-primary hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer"
+    v-if="isConnected"
+    class="w-full max-w-[150px] h-[30px] px-1 py-2 rounded-md bg-disconnected border border-border-primary hover:scale-105 transition-transform duration-300 flex items-center justify-evenly cursor-pointer opacity-90"
   >
-    <span class="text-text-primary">{{ props.text }}</span>
+    <span class="text-red-500 text-sm">Disconnected</span>
+    <Icon name="no_encryption" class="text-red-500" />
+  </div>
+  <div v-else>
+    <div
+      class="w-full max-w-[150px] h-[30px] px-2 py-2 rounded-md bg-connected border border-border-primary hover:scale-105 transition-transform duration-300 flex items-center justify-evenly cursor-pointer opacity-90 gap-3"
+    >
+      <span class="text-green-500 text-sm">Connected</span>
+      <Icon name="lock" class="text-green-500" />
+    </div>
   </div>
 </template>
 

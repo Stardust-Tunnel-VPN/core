@@ -6,6 +6,7 @@ import Icon from '@/components/Icon.vue'
 </script>
 
 <template>
+  <!-- TODO: fix css divs styling -->
   <div class="flex items-center justify-evenly pt-[40px]">
     <div class="flex justify-center">
       <Frame
@@ -25,10 +26,9 @@ import Icon from '@/components/Icon.vue'
         subheaderText="Monitor your VPN connection"
         bg-color="white"
       >
-        <!-- CONNECTION-STATUS BUTTON TODO: get rid of 'text' prop later - do it based on the store.-->
-        <div class="flex flex-row items-center justify-between px-6">
-          <ConnectionButton text="Disconnected" />
-          <Icon name="signal_disconnected" class="text-main-accent" variant="outlined" />
+        <!-- CONNECTION-STATUS BUTTON -->
+        <div class="flex flex-row justify-start px-6 py-2">
+          <ConnectionButton />
         </div>
       </Frame>
       <Frame
