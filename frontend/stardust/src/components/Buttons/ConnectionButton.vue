@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
-import Button from '@/components/Buttons/Button.vue'
+import { defineProps, computed } from 'vue'
+import Icon from '@/components/Icon.vue'
 
 const props = defineProps<{
-  isClientConnected: boolean
-  size: 'small' | 'medium' | 'large'
+  text: string
+  size?: string
+  leftIcon?: string
+  rightIcon?: string
 }>()
 
-const buttonColours = computed(() => {
-  props.isClientConnected ? 'bg-green-500' : 'bg-red-500'
+// TODO - do it later based on connected-store
+
+const isConnected = computed(() => {
+  return props.text === 'Disconnect'
+})
+
+const bgColor = computed(() => {
+  return isConnected.value ? 'bg-connected' : 'bg-disconnected'
 })
 </script>
 
 <template>
-  <Button
-    :text="props.isClientConnected ? 'Connected' : 'Disconnected'"
-    :size="props.size"
-    :class="buttonColours"
-  />
+  <div
+    :class="bgColor"
+    class="w-full max-w-[150px] h-[35px] px-4 py-2 rounded-sm border border-border-primary hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer"
+  >
+    <span class="text-text-primary">{{ props.text }}</span>
+  </div>
 </template>
 
 <style scoped></style>

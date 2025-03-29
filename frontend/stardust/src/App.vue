@@ -9,12 +9,10 @@ import Home from '@/views/Home.vue'
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <Navbar showLogo />
-    </div>
-  </header>
-  <Home />
+  <div class="wrapper">
+    <Navbar showLogo />
+    <Home />
+  </div>
 </template>
 
 <style scoped></style>

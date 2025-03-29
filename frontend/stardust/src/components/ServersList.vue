@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Frame from '@/components/Frame.vue'
-import Button from '@/components/Button.vue'
+import ConnectionLogs from '@/components/ConnectionLogs.vue'
+import ConnectionButton from '@/components/Buttons/ConnectionButton.vue'
+import Icon from '@/components/Icon.vue'
 </script>
 
 <template>
@@ -23,7 +25,11 @@ import Button from '@/components/Button.vue'
         subheaderText="Monitor your VPN connection"
         bg-color="white"
       >
-        <!-- CONNECTION-STATUS BUTTON -->
+        <!-- CONNECTION-STATUS BUTTON TODO: get rid of 'text' prop later - do it based on the store.-->
+        <div class="flex flex-row items-center justify-between px-6">
+          <ConnectionButton text="Disconnected" />
+          <Icon name="signal_disconnected" class="text-main-accent" variant="outlined" />
+        </div>
       </Frame>
       <Frame
         size="large"
@@ -32,6 +38,9 @@ import Button from '@/components/Button.vue'
         bg-color="white"
       >
         <!-- CONNECTION-LOGS COMPONENT -->
+        <div class="w-full h-full flex items-start justify-center">
+          <ConnectionLogs />
+        </div>
       </Frame>
     </div>
   </div>
