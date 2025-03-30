@@ -2,6 +2,10 @@
 import { defineProps, defineEmits, ref, defineModel } from 'vue'
 import Icon from '@/components/Icon.vue'
 
+const props = defineProps<{
+  placeholder?: string
+}>()
+
 const modelValue = defineModel<string>({
   required: true,
 })
@@ -12,7 +16,7 @@ const modelValue = defineModel<string>({
     <input
       v-model="modelValue"
       class="relative w-full h-full bg-bg-secondary text-text-primary text-lg px-2 py-2 rounded-md border-border-primary border-2"
-      placeholder="Search..."
+      :placeholder="props.placeholder"
     />
     <!-- <Icon name="search" class="text-white absolute" /> -->
   </div>

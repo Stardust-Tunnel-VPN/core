@@ -61,7 +61,7 @@ onMounted(() => {
       >
         <!-- V-MODEL BASED SEARCH, 2 DROPDOWNS (V-MODEL AS WELL) + TABLE -->
         <div class="w-full px-5">
-          <Input v-model="searchStr" />
+          <Input v-model="searchStr" placeholder="Search by server name..." />
         </div>
         <div class="flex flex-row justify-between px-6 py-2">
           <Dropdown :options="countriesOptions" placeholder="Select country" />

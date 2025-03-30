@@ -13,7 +13,7 @@ const isDataEmpty = computed(() => props.data.length === 0)
 
 <template>
   <div
-    class="flex items-start justify-between overflow-y-auto overflow-x-hidden max-h-[525px] rounded-lg"
+    class="flex items-start justify-between overflow-y-auto overflow-x-hidden scrollbar-dark max-h-[525px] rounded-lg"
   >
     <table class="min-w-full min-h-[525px] border-[1px] border-border-primary">
       <!-- HEAD SECTION -->
