@@ -10,9 +10,15 @@ import type { DropdownOption } from '@/utils/interfaces/dropdown_option'
 import { useVpnServersStore } from '@/stores/serversStore'
 import { SortDirection } from '@/http/http_client'
 import ServersTable from '@/components/Tables/ServersTable/ServersTable.vue'
+import ConnectionModal from '@/components/Tables/Modals/ConnectionModal.vue'
+import { StardustHttpClient } from '@/http/http_client'
 
 // search works for #HostName property for now
 const searchStr = ref('')
+
+const httpClient = new StardustHttpClient()
+
+const isConnectionModalVisible = ref(false)
 
 const countriesOptions = computed<DropdownOption<string>[]>(() => {
   return Object.entries(availableCountries).map(([countryName, countryCode]: [string, string]) => ({
@@ -43,6 +49,10 @@ function fetchServers(search?: string, sortBy?: string, sortDirection?: SortDire
 const selectedCountryValue = computed(() => selectedCountry.value?.value)
 
 const selectedSortOptionValue = computed(() => selectedSortOption.value?.value)
+
+function toggleConnectionModal() {
+  isConnectionModalVisible.value = !isConnectionModalVisible.value
+}
 
 onMounted(() => {
   fetchServers(searchStr.value, selectedSortOption.value.value, SortDirection.ASC)
@@ -82,7 +92,8 @@ onMounted(() => {
       >
         <!-- CONNECTION-STATUS BUTTON -->
         <div class="flex flex-row justify-start px-6 py-2">
-          <ConnectionButton />
+          <ConnectionButton @click="toggleConnectionModal" />
+          <ConnectionModal v-model:visible="isConnectionModalVisible" />
         </div>
       </Frame>
       <Frame

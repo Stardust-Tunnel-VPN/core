@@ -27,7 +27,7 @@ function onGotIt() {
     <div v-if="visible" class="fixed inset-0 z-[10000] flex items-center justify-center">
       <!-- Overlay -->
       <div class="absolute inset-0 bg-black opacity-50"></div>
-      <!-- Modal container с overflow-y и скрытой полосой прокрутки -->
+
       <div
         class="relative bg-bg-primary rounded-lg p-6 max-w-md w-full max-h-[600px] overflow-y-auto scrollbar-dark"
       >
@@ -74,12 +74,4 @@ function onGotIt() {
   </transition>
 </template>
 
-<style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-</style>
+<style scoped></style>
