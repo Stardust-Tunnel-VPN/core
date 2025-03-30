@@ -9,6 +9,7 @@ import { availableCountries } from '@/utils/interfaces/avaliable_countries'
 import type { DropdownOption } from '@/utils/interfaces/dropdown_option'
 import { useVpnServersStore } from '@/stores/serversStore'
 import { SortDirection } from '@/http/http_client'
+import ServersTable from '@/components/Tables/ServersTable/ServersTable.vue'
 
 // search works for #HostName property for now
 const searchStr = ref('')
@@ -39,6 +40,10 @@ function fetchServers(search?: string, sortBy?: string, sortDirection?: SortDire
   serversStore.fetchServers(search, sortBy, sortDirection)
 }
 
+const selectedCountryValue = computed(() => selectedCountry.value?.value)
+
+const selectedSortOptionValue = computed(() => selectedSortOption.value?.value)
+
 onMounted(() => {
   fetchServers(searchStr.value, selectedSortOption.value.value, SortDirection.ASC)
 })
@@ -55,8 +60,19 @@ onMounted(() => {
         bg-color="white"
       >
         <!-- V-MODEL BASED SEARCH, 2 DROPDOWNS (V-MODEL AS WELL) + TABLE -->
-        <div class="w-full px-6">
+        <div class="w-full px-5">
           <Input v-model="searchStr" />
+        </div>
+        <!-- <div class="flex flex-row justify-between px-6 py-2">
+          <Dropdown
+            v-model="selectedCountry?.label"
+            :options="countriesOptions"
+            placeholder="Select country"
+          />
+          <Dropdown v-model="selectedCountry?.label" :options="sortOptions" placeholder="Sort by" />
+        </div> -->
+        <div class="pt-10 px-5">
+          <ServersTable :servers="serversStore.servers" />
         </div>
       </Frame>
     </div>
