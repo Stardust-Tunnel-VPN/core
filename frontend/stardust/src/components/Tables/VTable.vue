@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref, defineProps, defineEmits, computed } from 'vue'
 import type { IVTableHeaders } from '@/utils/interfaces/vtable_headers'
 
 const props = defineProps<{
@@ -7,20 +7,20 @@ const props = defineProps<{
   data: any[]
   isLoading?: boolean
 }>()
+
+const isDataEmpty = computed(() => props.data.length === 0)
 </script>
 
 <template>
-  <div
-    class="flex items-start justify-between overflow-auto max-h-[325px] px-1 py-1 border-2 border-border-primary rounded-lg"
-  >
-    <table class="min-w-full border border-border-primary">
+  <div class="flex items-start justify-between overflow-auto max-h-[325px] rounded-lg">
+    <table class="min-w-full min-h-[325px] border-[1px] border-border-primary">
       <!-- HEAD SECTION -->
-      <thead class="bg-bg-secondary">
-        <tr>
+      <thead class="bg-bg-secondary border-[1px] rounded-md border-border-primary">
+        <tr class="">
           <th
             v-for="header in props.headers"
             :key="header.key"
-            class="px-4 py-2 border border-border-primary text-text-primary"
+            class="py-2 text-text-primary font-mono font-extralight"
           >
             {{ header.label }}
           </th>
@@ -28,7 +28,13 @@ const props = defineProps<{
       </thead>
       <!-- BODY SECTION -->
       <tbody>
-        <slot name="body" />
+        <slot v-if="!isDataEmpty" name="body" />
+        <tr v-else>
+          <!-- TODO: implement & provide 'empty-list' component or loader -->
+          <td :colspan="props.headers.length" class="py-4 text-center text-text-primary font-mono">
+            {{ props.isLoading ? 'Loading...' : 'No data avaliable; Try to refresh' }}
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>

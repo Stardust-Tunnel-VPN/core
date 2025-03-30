@@ -18,7 +18,6 @@ const tableHeaders: IVTableHeaders[] = [
   { key: 'Ping', label: 'Ping', sortable: true },
   { key: 'Uptime', label: 'Uptime', sortable: true },
   { key: 'TotalUsers', label: 'Total Users', sortable: true },
-  { key: 'Operator', label: 'Operator', sortable: false },
 ]
 </script>
 

@@ -20,7 +20,7 @@ const showHeader = computed(() => props.headerText && props.subheaderText)
 <template>
   <div
     :class="frameClasses"
-    class="bg-bg-primary rounded-xl shadow-md hover:scale-105 transition-transform duration-300"
+    class="bg-bg-primary rounded-xl shadow-md transition-transform duration-300"
   >
     <div v-if="showHeader" class="flex flex-col items-start justify-between px-6 py-4">
       <h1 class="text-lg font-bold text-text-primary">{{ props.headerText }}</h1>
