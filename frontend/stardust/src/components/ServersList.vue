@@ -63,14 +63,10 @@ onMounted(() => {
         <div class="w-full px-5">
           <Input v-model="searchStr" />
         </div>
-        <!-- <div class="flex flex-row justify-between px-6 py-2">
-          <Dropdown
-            v-model="selectedCountry?.label"
-            :options="countriesOptions"
-            placeholder="Select country"
-          />
-          <Dropdown v-model="selectedCountry?.label" :options="sortOptions" placeholder="Sort by" />
-        </div> -->
+        <div class="flex flex-row justify-between px-6 py-2">
+          <Dropdown :options="countriesOptions" placeholder="Select country" />
+          <Dropdown :options="sortOptions" placeholder="Sort by" />
+        </div>
         <div class="pt-10 px-5">
           <ServersTable :servers="serversStore.servers" />
         </div>

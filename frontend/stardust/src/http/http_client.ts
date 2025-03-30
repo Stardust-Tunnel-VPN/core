@@ -37,6 +37,7 @@ export class StardustHttpClient {
         kill_switch_enabled: killSwitchEnabled.toString(),
       }
       const response = await this.axiosInstance.post<string>('/connect', null, { params })
+
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {

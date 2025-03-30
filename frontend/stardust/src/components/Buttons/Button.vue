@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { defineProps, computed } from 'vue'
 
 const props = defineProps<{
   text: string
@@ -7,13 +7,21 @@ const props = defineProps<{
   leftIcon?: string
   rightIcon?: string
   bgColor?: string
+  isActiveButton?: boolean
 }>()
+
+const btnClass = computed(() => {
+  const size = props.size || 'md'
+  const bgColor = props.bgColor || 'bg-bg-secondary'
+  const isActiveButton = props.isActiveButton
+    ? 'bg-main-accent-hover hover:bg-main-accent-hover'
+    : ''
+  return `w-auto max-w-[400px] h-[35px] px-4 py-2 rounded-sm border border-border-primary ${bgColor} ${isActiveButton}  hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer`
+})
 </script>
 
 <template>
-  <div
-    class="w-auto max-w-[400px] h-[35px] px-4 py-2 rounded-sm border border-border-primary bg-bg-secondary hover:bg-bg-hover hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer"
-  >
+  <div :class="btnClass">
     <span class="text-text-primary">{{ props.text }}</span>
   </div>
 </template>

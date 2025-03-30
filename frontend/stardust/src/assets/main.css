@@ -12,7 +12,8 @@
   --color-logs-primary: #f9fafb;
   --color-connected: #d1ffbd;
   --color-disconnected: #fee2e2;
-  --color-main-accent: #bf40bf;
+  --color-main-accent: #5d3fd3;
+  --color-main-accent-hover: #ffadff;
   --font-source-code-pro: 'Source Code Pro', monospace;
   --font-inter: 'Inter', sans-serif;
 }

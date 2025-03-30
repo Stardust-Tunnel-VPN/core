@@ -3,10 +3,8 @@ import { defineProps, computed } from 'vue'
 import Icon from '@/components/Icon.vue'
 import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
 
-// TODO - do it later based on connected-store
 const connectionStatusStore = useConnectionStatusStore()
 
-// based on the store state of course
 const isConnected = computed(() => {
   return connectionStatusStore.connected
 })
