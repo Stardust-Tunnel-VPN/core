@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
 import Icon from '@/components/Icon.vue'
+import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
 
 // TODO - do it later based on connected-store
+const connectionStatusStore = useConnectionStatusStore()
 
 // based on the store state of course
 const isConnected = computed(() => {
-  return true
+  return connectionStatusStore.connected
 })
 </script>
 
 <template>
   <div
-    v-if="isConnected"
+    v-if="!isConnected"
     class="w-full max-w-[150px] h-[30px] px-1 py-2 rounded-md bg-disconnected border border-border-primary hover:scale-105 transition-transform duration-300 flex items-center justify-evenly cursor-pointer opacity-90"
   >
     <span class="text-red-500 text-sm">Disconnected</span>
