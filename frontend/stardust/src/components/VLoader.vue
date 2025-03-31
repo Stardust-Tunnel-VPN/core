@@ -1,7 +1,12 @@
 <template>
   <div v-if="isLoading" class="loader-container" :style="loaderDimensions">
     <!-- Передаём Icon, применяя вычисленный размер шрифта через inline-стиль -->
-    <Icon name="sync" :size="size" class="loader-icon text-text-primary" :style="iconStyle" />
+    <Icon
+      name="sync"
+      :size="size"
+      class="loader-icon text-text-primary font-extralight"
+      :style="iconStyle"
+    />
   </div>
 </template>
 

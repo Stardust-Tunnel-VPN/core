@@ -15,7 +15,7 @@ const isDataEmpty = computed(() => props.isLoading || props.data.length === 0)
 <template>
   <div
     v-if="!isDataEmpty"
-    class="flex items-start justify-between overflow-y-auto overflow-x-hidden scrollbar-dark max-h-[500px] rounded-lg"
+    class="flex items-start justify-between overflow-y-auto overflow-x-hidden scrollbar-dark max-h-[425px] rounded-lg"
   >
     <table class="min-w-full border-[1px] border-border-primary">
       <!-- HEAD SECTION -->

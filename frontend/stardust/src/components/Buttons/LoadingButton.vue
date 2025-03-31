@@ -1,23 +1,42 @@
 <script setup lang="ts">
-import { defineProps, computed, ref } from 'vue'
-import Icon from '@/components/Icon.vue'
+import { defineProps, defineEmits, computed } from 'vue'
 import Button from '@/components/Buttons/Button.vue'
+import Icon from '@/components/Icon.vue'
 
 const props = defineProps<{
   isLoading: boolean
   buttonText?: string
 }>()
 
-const btnText = computed(() => {
-  return props.buttonText ? props.buttonText : ' '
-})
+const emit = defineEmits<{
+  (e: 'refresh'): void
+}>()
+
+const btnText = computed(() => props.buttonText || 'Refresh')
+
+function onRefresh() {
+  if (!props.isLoading) {
+    emit('refresh')
+  }
+}
 </script>
 
 <template>
-  <div>
-    <Icon name="sync" />
-    <Button :text="btnText" />
-  </div>
+  <!-- Оборачиваем Button, чтобы добавить click-событие и использовать слот -->
+  <Button @click="onRefresh">
+    <div class="flex items-center gap-2">
+      <!-- Иконка "sync" с анимацией вращения при hover -->
+      <Icon name="sync" class="refresh-icon" />
+      <span class="text-text-primary">{{ btnText }}</span>
+    </div>
+  </Button>
 </template>
 
-<style scoped></style>
+<style scoped>
+.refresh-icon {
+  transition: transform 0.3s;
+}
+.refresh-icon:hover {
+  transform: rotate(360deg);
+}
+</style>

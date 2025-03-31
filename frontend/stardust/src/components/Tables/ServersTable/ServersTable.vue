@@ -30,7 +30,7 @@ const onRowClick = (server: IVpnServerResponse) => {
   <VTable :headers="props.tableHeaders" :data="props.servers">
     <template #body>
       <ServersTableRow
-        v-if="!isLoading"
+        v-if="!props.isLoading"
         v-for="server in servers"
         :key="server['#HostName']"
         :server="server"

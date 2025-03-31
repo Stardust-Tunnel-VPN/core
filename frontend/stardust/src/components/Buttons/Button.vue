@@ -2,7 +2,7 @@
 import { defineProps, computed } from 'vue'
 
 const props = defineProps<{
-  text: string
+  text?: string
   size?: string
   leftIcon?: string
   rightIcon?: string
@@ -16,13 +16,13 @@ const btnClass = computed(() => {
   const isActiveButton = props.isActiveButton
     ? 'bg-main-accent-hover hover:bg-main-accent-hover'
     : ''
-  return `w-auto max-w-[400px] h-[35px] px-4 py-2 rounded-sm border border-border-primary ${bgColor} ${isActiveButton}  hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer`
+  return `w-auto max-w-[400px] h-[35px] px-4 py-2 rounded-sm border border-border-primary ${bgColor} ${isActiveButton} hover:scale-105 transition-transform duration-300 flex items-center justify-center cursor-pointer text-text-primary`
 })
 </script>
 
 <template>
   <div :class="btnClass">
-    <span class="text-text-primary">{{ props.text }}</span>
+    <slot>{{ props.text || 'Button' }}</slot>
   </div>
 </template>
 

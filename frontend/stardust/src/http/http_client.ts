@@ -14,7 +14,7 @@ import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
 export interface getServersQueryParams {
   search?: string
   sortBy?: string
-  sortDirection?: SortDirection.ASC
+  sortDirection?: SortDirection
 }
 
 export enum SortDirection {
