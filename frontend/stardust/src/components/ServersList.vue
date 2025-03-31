@@ -4,7 +4,7 @@ import ConnectionLogs from '@/components/ConnectionLogs.vue'
 import ConnectionButton from '@/components/Buttons/ConnectionButton.vue'
 import Input from '@/components/Input.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import { computed, ref, defineProps, onMounted } from 'vue'
+import { computed, ref, defineProps, onMounted, watch } from 'vue'
 import { availableCountries } from '@/utils/interfaces/avaliable_countries'
 import type { DropdownOption } from '@/utils/interfaces/dropdown_option'
 import { useVpnServersStore } from '@/stores/serversStore'
@@ -20,6 +20,8 @@ const searchStr = ref('')
 const queryParams = ref<getServersQueryParams>({})
 
 const isConnectionModalVisible = ref(false)
+
+const isLoading = ref<boolean>(false)
 
 const tableHeaders = [
   { key: '#HostName', label: 'Server Name', sortable: false },
@@ -51,8 +53,13 @@ const selectedSortOptionValue = computed({
 const serversStore = useVpnServersStore()
 
 function fetchServers(search?: string, sortBy?: string, sortDirection?: SortDirection) {
-  search === '' ? (search = undefined) : search
-  serversStore.fetchServers(search, sortBy, sortDirection)
+  isLoading.value = true
+  try {
+    search === '' ? (search = undefined) : search
+    serversStore.fetchServers(search, sortBy, sortDirection)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 function toggleConnectionModal() {
@@ -62,6 +69,14 @@ function toggleConnectionModal() {
 onMounted(() => {
   fetchServers(searchStr.value, selectedSortOptionValue.value, SortDirection.ASC)
 })
+
+watch(
+  queryParams,
+  (newQueryParams) => {
+    fetchServers(searchStr.value, newQueryParams.sortBy, SortDirection.ASC)
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -87,7 +102,11 @@ onMounted(() => {
             />
           </div>
           <div class="mt-2 px-5 w-full">
-            <ServersTable :servers="serversStore.servers" :table-headers="tableHeaders" />
+            <ServersTable
+              :servers="serversStore.servers"
+              :table-headers="tableHeaders"
+              :is-loading="isLoading"
+            />
           </div>
         </div>
       </Frame>
