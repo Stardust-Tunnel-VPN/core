@@ -7,6 +7,7 @@ import ServersTableRow from '@/components/Tables/ServersTable/ServersTableRow.vu
 import ServerInfoModal from '@/components/Tables/Modals/ServerInfoModal.vue'
 
 const props = defineProps<{
+  tableHeaders: IVTableHeaders[]
   servers: IVpnServerResponse[]
   isLoading?: boolean
 }>()
@@ -23,20 +24,10 @@ const onRowClick = (server: IVpnServerResponse) => {
   selectedServer.value = server
   openModal()
 }
-
-// I'm not sure if they're all sortable.
-const tableHeaders: IVTableHeaders[] = [
-  { key: '#HostName', label: 'Server Name', sortable: false },
-  { key: 'CountryLong', label: 'Country', sortable: true },
-  { key: 'Speed', label: 'Speed', sortable: true },
-  { key: 'Ping', label: 'Ping', sortable: true },
-  { key: 'Uptime', label: 'Uptime', sortable: true },
-  { key: 'TotalUsers', label: 'Total Users', sortable: true },
-]
 </script>
 
 <template>
-  <VTable :headers="tableHeaders" :data="props.servers">
+  <VTable :headers="props.tableHeaders" :data="props.servers">
     <template #body>
       <ServersTableRow
         v-if="!isLoading"

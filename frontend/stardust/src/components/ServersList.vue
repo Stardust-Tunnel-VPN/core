@@ -12,32 +12,41 @@ import { SortDirection } from '@/http/http_client'
 import ServersTable from '@/components/Tables/ServersTable/ServersTable.vue'
 import ConnectionModal from '@/components/Tables/Modals/ConnectionModal.vue'
 import { StardustHttpClient } from '@/http/http_client'
+import type { getServersQueryParams } from '@/http/http_client'
 
 // search works for #HostName property for now
 const searchStr = ref('')
 
-const httpClient = new StardustHttpClient()
+const queryParams = ref<getServersQueryParams>({})
 
 const isConnectionModalVisible = ref(false)
 
-const countriesOptions = computed<DropdownOption<string>[]>(() => {
-  return Object.entries(availableCountries).map(([countryName, countryCode]: [string, string]) => ({
-    id: countryCode,
-    label: countryName,
-    value: countryCode,
-  }))
-})
-
-const selectedCountry = ref<DropdownOption<string>>()
-
-const sortOptions: DropdownOption<string>[] = [
-  { id: '1', label: 'Sort By Speed', value: 'Speed' },
-  { id: '2', label: 'Sort By Ping', value: 'Ping' },
-  { id: '3', label: 'Sort By Uptime', value: 'Uptime' },
+const tableHeaders = [
+  { key: '#HostName', label: 'Server Name', sortable: false },
+  { key: 'CountryLong', label: 'Country', sortable: true },
+  { key: 'Speed', label: 'Speed', sortable: true },
+  { key: 'Ping', label: 'Ping', sortable: true },
+  { key: 'Uptime', label: 'Uptime', sortable: true },
+  { key: 'TotalUsers', label: 'Total Users', sortable: true },
 ]
 
-// 'Sort by speed' should be by default
-const selectedSortOption = ref<DropdownOption<string>>(sortOptions[0])
+// generating sortable options based on table headers
+const sortOptions = computed<DropdownOption<string>[]>(() =>
+  tableHeaders
+    .filter((header) => header.sortable)
+    .map((header) => ({
+      id: header.key,
+      label: `Sort by ${header.label.toLowerCase()}`,
+      value: header.key,
+    })),
+)
+
+const selectedSortOptionValue = computed({
+  get: () => queryParams.value.sortBy || sortOptions.value[0]?.value || '',
+  set: (newVal: string) => {
+    queryParams.value.sortBy = newVal
+  },
+})
 
 const serversStore = useVpnServersStore()
 
@@ -46,16 +55,12 @@ function fetchServers(search?: string, sortBy?: string, sortDirection?: SortDire
   serversStore.fetchServers(search, sortBy, sortDirection)
 }
 
-const selectedCountryValue = computed(() => selectedCountry.value?.value)
-
-const selectedSortOptionValue = computed(() => selectedSortOption.value?.value)
-
 function toggleConnectionModal() {
   isConnectionModalVisible.value = !isConnectionModalVisible.value
 }
 
 onMounted(() => {
-  fetchServers(searchStr.value, selectedSortOption.value.value, SortDirection.ASC)
+  fetchServers(searchStr.value, selectedSortOptionValue.value, SortDirection.ASC)
 })
 </script>
 
@@ -70,15 +75,20 @@ onMounted(() => {
         bg-color="white"
       >
         <!-- V-MODEL BASED SEARCH, 2 DROPDOWNS (V-MODEL AS WELL) + TABLE -->
-        <div class="w-full px-5">
-          <Input v-model="searchStr" placeholder="Search by server name..." />
-        </div>
-        <div class="flex flex-row justify-between px-6 py-2">
-          <Dropdown :options="countriesOptions" placeholder="Select country" />
-          <Dropdown :options="sortOptions" placeholder="Sort by" />
-        </div>
-        <div class="pt-10 px-5">
-          <ServersTable :servers="serversStore.servers" />
+        <div class="flex flex-col items-center justify-center">
+          <div class="w-full px-5">
+            <Input v-model="searchStr" placeholder="Search by server name..." />
+          </div>
+          <div class="flex flex-row justify-between w-full mt-10 px-5">
+            <Dropdown
+              v-model="selectedSortOptionValue"
+              :options="sortOptions"
+              placeholder="Sort by"
+            />
+          </div>
+          <div class="mt-2 px-5 w-full">
+            <ServersTable :servers="serversStore.servers" :table-headers="tableHeaders" />
+          </div>
         </div>
       </Frame>
     </div>

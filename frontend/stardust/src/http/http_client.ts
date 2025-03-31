@@ -11,6 +11,12 @@ import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
  * Each method directly uses axios for sending HTTP requests with async/await.
  */
 
+export interface getServersQueryParams {
+  search?: string
+  sortBy?: string
+  sortDirection?: SortDirection.ASC
+}
+
 export enum SortDirection {
   ASC = 'ASC',
   DESC = 'DESC',
