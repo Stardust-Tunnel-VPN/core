@@ -18,6 +18,7 @@ const queryParams = ref<getServersQueryParams>({})
 
 const isConnectionModalVisible = ref(false)
 const isLoading = ref<boolean>(false)
+const killSwitchEnabled = ref(false)
 
 const tableHeaders = [
   { key: '#HostName', label: 'Server Name', sortable: false },
@@ -97,8 +98,7 @@ onMounted(() => {
           <Input v-model="searchStr" placeholder="Search by server name..." class="w-3/4" />
           <LoadingButton :isLoading="isLoading" buttonText="Refresh" @refresh="onRefresh" />
         </div>
-        <!-- Панель с двумя Dropdown'ами -->
-        <div class="flex flex-col gap-2 w-full py-7">
+        <div class="flex flex-col gap-4 w-full py-7">
           <div class="flex flex-row justify-between w-full px-5">
             <Dropdown
               v-model="selectedSortOptionValue"
@@ -127,12 +127,15 @@ onMounted(() => {
       <Frame
         size="medium"
         headerText="Connection status"
-        subheaderText="Monitor your VPN connection"
+        subheaderText="Monitor your VPN connection and connect"
         bg-color="white"
       >
         <div class="flex flex-row justify-start px-6 py-2">
           <ConnectionButton @click="toggleConnectionModal" />
-          <ConnectionModal v-model:visible="isConnectionModalVisible" />
+          <ConnectionModal
+            v-model:visible="isConnectionModalVisible"
+            v-model:kill-switch-enabled="killSwitchEnabled"
+          />
         </div>
       </Frame>
       <Frame

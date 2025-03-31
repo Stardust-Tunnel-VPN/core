@@ -35,7 +35,7 @@ function toggleDarkMode() {
       </div>
     </div>
     <div class="flex gap-6 items-center justify-center">
-      <Button text="Explore Stardust 🚀" />
+      <Button text="📖 Explore Stardust" />
       <Icon
         v-if="darkModeStore.isDarkMode"
         name="dark_mode"

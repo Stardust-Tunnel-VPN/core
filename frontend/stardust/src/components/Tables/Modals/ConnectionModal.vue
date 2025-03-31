@@ -3,8 +3,9 @@ import { defineProps, defineEmits, ref, computed } from 'vue'
 import { StardustHttpClient } from '@/http/http_client'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
 import Button from '@/components/Buttons/Button.vue'
-import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
 import Icon from '@/components/Icon.vue'
+import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
+import KillSwitchToggle from '@/components/KillSwitchToggle.vue'
 
 enum ConnectionMessages {
   CONNECT = 'Do you want to connect to MyL2TP Connection?',
@@ -20,12 +21,20 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'connect', server: IVpnServerResponse | undefined): void
   (e: 'update:visible', value: boolean): void
+  (e: 'update:killSwitchEnabled', value: boolean): void
 }>()
 
 const httpClient = new StardustHttpClient()
 const connectionStatus = useConnectionStatusStore()
 
 const reactiveText = ref<string>(ConnectionMessages.CONNECT)
+
+const killSwitch = computed<boolean>({
+  get: () => props.killSwitchEnabled ?? false,
+  set: (val: boolean) => {
+    emit('update:killSwitchEnabled', val)
+  },
+})
 
 const isConnected = computed(() => connectionStatus.connected)
 
@@ -56,7 +65,7 @@ async function performOperation(
 
 async function connectToMyL2TP(serverIp?: string) {
   await performOperation(
-    () => httpClient.connectToVpn(serverIp, props.killSwitchEnabled),
+    () => httpClient.connectToVpn(serverIp, killSwitch.value),
     'Connecting...',
     'Connected successfully! ✅',
     'Failed to connect! ❌',
@@ -101,20 +110,37 @@ function onClose() {
           </button>
         </div>
         <div class="mt-3">
-          <p v-if="props.serverIp" class="text-text-secondary text-md">
+          <p v-if="serverIp" class="text-text-secondary text-md">
             {{
               isConnected
-                ? 'Do you want to disconnect from ' + props.serverIp + '?'
-                : 'Do you want to connect to ' + props.serverIp + '?'
+                ? 'Do you want to disconnect from ' + serverIp + '?'
+                : 'Do you want to connect to ' + serverIp + '?'
             }}
           </p>
           <p v-else class="text-text-secondary text-md">
             {{ reactiveText }}
           </p>
+          <!-- Kill Switch Toggle -->
+          <div class="flex items-center justify-between mt-4">
+            <span class="text-text-primary text-xl font-semibold font-source-code-pro"
+              >Kill Switch feature</span
+            >
+            <KillSwitchToggle v-model="killSwitch" />
+          </div>
+          <div
+            v-show="killSwitch"
+            class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm"
+          >
+            ⚠️ Attention! Although we're working on optimizing the kill-switch feature, we can't
+            guarantee that enabling it will improve your connection speed. We strive to optimize and
+            bypass various issues, but every OS update brings its own challenges. On macOS, it
+            usually works fine, but on Windows, there might be occasional speed drops. We're on it –
+            thank you for your understanding!
+          </div>
           <div class="flex justify-end gap-2 mt-6">
             <Button
               v-if="!isConnected"
-              @click="connectToMyL2TP()"
+              @click="connectToMyL2TP(serverIp)"
               text="Connect"
               is-active-button
             />
@@ -127,6 +153,4 @@ function onClose() {
   </transition>
 </template>
 
-<style scoped>
-/* Дополнительные стили можно добавить при необходимости */
-</style>
+<style scoped></style>
