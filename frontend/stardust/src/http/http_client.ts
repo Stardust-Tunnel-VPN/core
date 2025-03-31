@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
+import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
 
 /**
  * StardustHttpClient.ts
@@ -31,13 +32,16 @@ export class StardustHttpClient {
    * @returns A string indicating the result of the connection attempt.
    */
   async connectToVpn(serverIp?: string, killSwitchEnabled: boolean = false): Promise<string> {
+    const logsStore = useConnectionLogsStore()
     try {
       const params = {
         server_ip: serverIp,
         kill_switch_enabled: killSwitchEnabled.toString(),
       }
+
       const response = await this.axiosInstance.post<string>('/connect', null, { params })
 
+      logsStore.addLog(response.data)
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -45,6 +49,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog(`Failed to connect to the server`)
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -55,11 +60,13 @@ export class StardustHttpClient {
    * @returns A string indicating the result of the disconnection attempt.
    */
   async disconnectFromVpn(serverIp?: string): Promise<string> {
+    const logsStore = useConnectionLogsStore()
     try {
       const params = {
         server_ip: serverIp,
       }
       const response = await this.axiosInstance.post<string>('/disconnect', null, { params })
+      logsStore.addLog(`Disconnected from the VPN connection`)
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -67,6 +74,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog(`Failed to disconnect from the VPN connection`)
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -76,8 +84,10 @@ export class StardustHttpClient {
    * @returns A string with the current VPN status.
    */
   async checkVpnStatus(): Promise<string> {
+    const logsStore = useConnectionLogsStore()
     try {
       const response = await this.axiosInstance.get<string>('/status')
+      logsStore.addLog('Checked VPN status')
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -85,6 +95,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog('Failed to check VPN status')
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -94,8 +105,10 @@ export class StardustHttpClient {
    * @returns A string indicating the result of the operation.
    */
   async enableKillSwitch(): Promise<string> {
+    const logsStore = useConnectionLogsStore()
     try {
       const response = await this.axiosInstance.post<string>('/enable_kill_switch')
+      logsStore.addLog('Enabled kill switch')
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -103,6 +116,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog('Failed to enable kill switch')
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -112,8 +126,10 @@ export class StardustHttpClient {
    * @returns A string indicating the result of the operation.
    */
   async disableKillSwitch(): Promise<string> {
+    const logsStore = useConnectionLogsStore()
     try {
       const response = await this.axiosInstance.post<string>('/disable_kill_switch')
+      logsStore.addLog('Disabled kill switch')
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -121,6 +137,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog('Failed to disable kill switch')
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -137,6 +154,7 @@ export class StardustHttpClient {
     sortBy?: string,
     orderBy: SortDirection = SortDirection.ASC,
   ): Promise<IVpnServerResponse[]> {
+    const logsStore = useConnectionLogsStore()
     try {
       const params = {
         search,
@@ -146,6 +164,7 @@ export class StardustHttpClient {
       const response = await this.axiosInstance.get<IVpnServerResponse[]>('/vpn_servers_list', {
         params,
       })
+      logsStore.addLog('Retrieved VPN servers list')
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
@@ -153,6 +172,7 @@ export class StardustHttpClient {
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
       }
+      logsStore.addLog('Failed to retrieve VPN servers list')
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }

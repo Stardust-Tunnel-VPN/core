@@ -99,7 +99,7 @@ onMounted(() => {
       <Frame
         size="large"
         headerText="Connection Logs"
-        subheaderText="View recent connection activity"
+        subheaderText="Take a look at the logs of your recent actions in this strange terminal..."
         bg-color="white"
       >
         <!-- CONNECTION-LOGS COMPONENT -->
