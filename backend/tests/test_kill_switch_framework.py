@@ -15,9 +15,12 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from scripts.bash.mac_os.kill_switch import (ConfScriptsPaths, ScriptsNames,
-                                             disable_kill_switch,
-                                             enable_kill_switch)
+from scripts.bash.mac_os.kill_switch import (
+    ConfScriptsPaths,
+    ScriptsNames,
+    disable_kill_switch,
+    enable_kill_switch,
+)
 
 
 @pytest.mark.asyncio

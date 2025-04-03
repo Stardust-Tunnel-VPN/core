@@ -10,7 +10,9 @@ import traceback
 from typing import Optional
 
 from configuration.macos_l2tp_connection import (
-    extract_ip_address_from_service_name, open_macos_network_settings)
+    extract_ip_address_from_service_name,
+    open_macos_network_settings,
+)
 from core.interfaces.ivpn_connector import IVpnConnector
 from scripts.bash.mac_os.kill_switch import ConfScriptsPaths
 from utils.reusable.commands.macos.commands_execution import run_macos_command

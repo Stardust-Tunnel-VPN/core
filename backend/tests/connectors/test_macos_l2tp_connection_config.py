@@ -12,7 +12,9 @@ import pytest
 
 from configuration.macos_l2tp_connection import (
     extract_ip_address_from_service_name,
-    extract_ip_address_from_service_name_sync, open_macos_network_settings)
+    extract_ip_address_from_service_name_sync,
+    open_macos_network_settings,
+)
 
 
 @pytest.mark.asyncio
