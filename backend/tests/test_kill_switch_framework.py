@@ -45,7 +45,9 @@ async def test_enable_kill_switch_fail():
     mock_proc.communicate.return_value = (b"", b"some error")
 
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-        with pytest.raises(RuntimeError, match="Failed to enable kill switch. Stderr: some error"):
+        with pytest.raises(
+            RuntimeError, match="Failed to enable kill switch. Stderr: some error"
+        ):
             await enable_kill_switch()
 
 
@@ -74,7 +76,8 @@ async def test_disable_kill_switch_fail():
 
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
         with pytest.raises(
-            RuntimeError, match="Failed to disable kill switch. Stderr: some disable error"
+            RuntimeError,
+            match="Failed to disable kill switch. Stderr: some disable error",
         ):
             await disable_kill_switch()
 

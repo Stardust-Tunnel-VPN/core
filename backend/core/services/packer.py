@@ -3,6 +3,7 @@ from pprint import pformat
 from typing import Dict, List, Optional
 
 from fastapi import HTTPException
+
 from utils.reusable.filters import filters_VPN_GATE
 from utils.reusable.restricted_countries import RestrictedCountries
 from utils.reusable.sort_directions import SortDirection

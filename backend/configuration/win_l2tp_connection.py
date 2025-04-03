@@ -34,5 +34,7 @@ async def create_windows_l2tp(server_ip: str, name: str = "MyL2TP", psk: str = "
             raise RuntimeError(f"Failed to create VPN connection: {stderr.decode()}")
         return stdout.decode()
     except Exception as exc:
-        print(f"Failed to create VPN connection for Windows (L2TP Configuration): {exc}")
+        print(
+            f"Failed to create VPN connection for Windows (L2TP Configuration): {exc}"
+        )
         raise exc

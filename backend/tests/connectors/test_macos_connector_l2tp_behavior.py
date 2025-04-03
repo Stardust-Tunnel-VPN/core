@@ -139,5 +139,7 @@ async def test_enable_kill_switch_fail():
     mock_proc.communicate.return_value = (b"", b"pfctl error msg")
 
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-        with pytest.raises(RuntimeError, match="Failed to enable kill switch: pfctl error msg"):
+        with pytest.raises(
+            RuntimeError, match="Failed to enable kill switch: pfctl error msg"
+        ):
             await connector.enable_kill_switch()

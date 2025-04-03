@@ -81,7 +81,10 @@ def test_vpngate_handler_get_vpn_servers(mocked_parser):
     assert len(result) == 4
 
 
-@patch("core.services.handler.Packer.transform_content", side_effect=Exception("Some error"))
+@patch(
+    "core.services.handler.Packer.transform_content",
+    side_effect=Exception("Some error"),
+)
 def test_vpngate_handler_get_vpn_servers_exception(mock_transform):
     """
     Test that get_vpn_servers() handles exceptions thrown by the packer
@@ -107,4 +110,6 @@ def test_vpngate_handler_get_vpn_servers_exception(mock_transform):
 
     result = handler.get_vpn_servers()
     assert isinstance(result, dict), "Expected a dict with error info."
-    assert "Some error" in list(result.values())[0], "Error message not found in result."
+    assert (
+        "Some error" in list(result.values())[0]
+    ), "Error message not found in result."

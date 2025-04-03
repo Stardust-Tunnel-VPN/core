@@ -24,7 +24,11 @@ class WindowsL2TPConnector(IVpnConnector):
         self.connection_name = connection_name
 
     async def connect(
-        self, server_ip: str, username: str = "vpn", password: str = "vpn", psk: str = "vpn"
+        self,
+        server_ip: str,
+        username: str = "vpn",
+        password: str = "vpn",
+        psk: str = "vpn",
     ) -> None:
         """
         Windows connector class method that connects to a VPN server using L2TP/IPsec protocol.
@@ -45,7 +49,9 @@ class WindowsL2TPConnector(IVpnConnector):
 
             # CONNECTION #
             cmd = ["rasdial", connection_name, username, password]
-            logger.info(f"WindowsL2TPConnector: connecting to {server_ip} with cmd: {cmd}")
+            logger.info(
+                f"WindowsL2TPConnector: connecting to {server_ip} with cmd: {cmd}"
+            )
 
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -54,8 +60,12 @@ class WindowsL2TPConnector(IVpnConnector):
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
-                logger.error(f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}")
-                raise RuntimeError(f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}")
+                logger.error(
+                    f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}"
+                )
+                raise RuntimeError(
+                    f"rasdial failed: {stderr.decode('utf-8', errors='ignore')}"
+                )
 
         except Exception as exc:
             logger.error(f"Failed to connect to {server_ip}: {exc}")
@@ -74,7 +84,9 @@ class WindowsL2TPConnector(IVpnConnector):
         try:
             # DISCONNECT #
             cmd = ["rasdial", self.connection_name, "/disconnect"]
-            logger.info(f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}")
+            logger.info(
+                f"WindowsL2TPConnector: disconnecting from {server_ip} with cmd: {cmd}"
+            )
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
@@ -112,7 +124,10 @@ class WindowsL2TPConnector(IVpnConnector):
 
             output = stdout.decode().lower()
 
-            if self.connection_name.lower in output and "command completed successfully" in output:
+            if (
+                self.connection_name.lower in output
+                and "command completed successfully" in output
+            ):
                 return "connected"
             else:
                 return "disconnected"
