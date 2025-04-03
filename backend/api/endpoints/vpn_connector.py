@@ -1,12 +1,11 @@
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends
-
 from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
+from fastapi import APIRouter, Depends
 from utils.reusable.sort_directions import SortDirection
 
 router = APIRouter()
@@ -121,7 +120,6 @@ async def disable_kill_switch() -> str:
 
 @router.get(
     "/vpn_servers_list",
-    # response_model=VPNGateServersSchema
 )
 async def get_vpn_servers(
     handler: VPNGateHandler = Depends(get_vpngate_handler),
@@ -138,7 +136,4 @@ async def get_vpn_servers(
     Returns:
         List[Dict[str, str]]: The VPN servers from the vpngate.net website.
     """
-    try:
-        return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)
-    except Exception as exc:
-        return {"You've got an error in getting vpn server list method, ": str(exc)}
+    return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)
