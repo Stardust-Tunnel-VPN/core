@@ -13,12 +13,8 @@ on:
 
 jobs:
   lint:
-    name: Lint on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-      fail-fast: false
+    name: Lint Checks
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
