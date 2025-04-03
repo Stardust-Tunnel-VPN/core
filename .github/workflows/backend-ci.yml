@@ -33,7 +33,6 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          poetry shell
           poetry install --no-interaction --no-ansi
         env:
           POETRY_NO_INTERACTION: 1
@@ -43,11 +42,9 @@ jobs:
           POETRY_NO_INTERACTION: 1
         run: |
           cd backend
-          poetry shell
           poetry run black --check --no-ansi .
 
       - name: Check isort ordering
         run: |
           cd backend
-          poetry shell
           poetry run isort --check-only .
