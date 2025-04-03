@@ -12,8 +12,8 @@ on:
       - "backend/**"
 
 jobs:
-  test:
-    name: Test on ${{ matrix.os }}
+  lint:
+    name: Lint on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -39,7 +39,12 @@ jobs:
           cd backend
           poetry install
 
-      - name: Check isort
+      - name: Check code formatting with Black
+        run: |
+          cd backend
+          poetry run black --check .
+
+      - name: Check isort ordering
         run: |
           cd backend
           poetry run isort --check-only .

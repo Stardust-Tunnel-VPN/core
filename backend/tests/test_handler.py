@@ -30,10 +30,6 @@ def test_vpn_servers_list_endpoint():
     assert resp.status_code == 200
 
     data = resp.json()
-    # Depending on how your endpoint is structured,
-    # you might assert that 'servers' key is present:
-    # assert "servers" in data
-    # and possibly check len(data["servers"]) or other details if needed.
 
 
 def test_vpngate_handler_init():
