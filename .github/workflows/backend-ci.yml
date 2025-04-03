@@ -38,10 +38,11 @@ jobs:
           POETRY_NO_INTERACTION: 1
 
       - name: Check code formatting with Black
+        env:
+          POETRY_NO_INTERACTION: 1
         run: |
           cd backend
-          poetry shell
-          poetry run black --check .
+          poetry run black --check --no-ansi .
 
       - name: Check isort ordering
         run: |
