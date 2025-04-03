@@ -9,7 +9,9 @@ from core.managers.vpn_manager_macos import MacOSL2TPConnector
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(os.geteuid() != 0, reason="Requires root privileges (sudo) to run pfctl.")
+@pytest.mark.skipif(
+    os.geteuid() != 0, reason="Requires root privileges (sudo) to run pfctl."
+)
 async def test_integration_vpn_kill_switch():
     """
     Integration test for MacOSL2TPConnector with real scutil/pfctl calls.
@@ -51,7 +53,9 @@ async def test_integration_vpn_kill_switch():
         )
         print(f"[TEST] Ping output:\n{output.decode('utf-8')}")
         if b"0 packets received" in output:
-            pytest.fail("[TEST] Ping returned 0 packets received while VPN is connected.")
+            pytest.fail(
+                "[TEST] Ping returned 0 packets received while VPN is connected."
+            )
     except Exception as e:
         pytest.fail(f"[TEST] Ping while VPN is connected failed unexpectedly: {e}")
 
@@ -71,7 +75,9 @@ async def test_integration_vpn_kill_switch():
     print("[TEST] 5) Attempting ping again – it should fail if kill-switch is active.")
     ping_failed = False
     try:
-        output = subprocess.check_output(["ping", "-c", "2", "-W", "2", "8.8.8.8"], timeout=10)
+        output = subprocess.check_output(
+            ["ping", "-c", "2", "-W", "2", "8.8.8.8"], timeout=10
+        )
         print("[TEST] Ping output after disconnect:\n", output.decode("utf-8"))
         # If we got here, ping surprisingly succeeded
     except subprocess.CalledProcessError:
@@ -83,13 +89,17 @@ async def test_integration_vpn_kill_switch():
 
     assert ping_failed, "[TEST] We expected ping to fail after kill-switch triggered."
 
-    print("[TEST] 6) Disabling kill-switch to restore normal traffic. Also stopping monitor.")
+    print(
+        "[TEST] 6) Disabling kill-switch to restore normal traffic. Also stopping monitor."
+    )
     try:
         disable_result = await connector.disable_kill_switch()
         print(f"[TEST] disable_kill_switch result: {disable_result}")
         await connector.stop_kill_switch_monitor()
         print("[TEST] Stopped kill-switch monitor.")
-        assert "disabled" in disable_result.lower(), "Should successfully disable kill-switch."
+        assert (
+            "disabled" in disable_result.lower()
+        ), "Should successfully disable kill-switch."
     except Exception as e:
         pytest.fail(f"[TEST] Error disabling kill-switch or stopping monitor: {e}")
 
@@ -97,7 +107,9 @@ async def test_integration_vpn_kill_switch():
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(os.geteuid() != 0, reason="Requires root privileges (sudo) to run pfctl.")
+@pytest.mark.skipif(
+    os.geteuid() != 0, reason="Requires root privileges (sudo) to run pfctl."
+)
 async def test_integration_vpn_kill_switch_forced_drop():
     """
     Integration test that forcibly drops the VPN outside the connector
@@ -141,24 +153,34 @@ async def test_integration_vpn_kill_switch_forced_drop():
         )
         print("[TEST] Ping output:\n", output.decode("utf-8"))
         if b"0 packets received" in output:
-            pytest.fail("[TEST] Ping returned 0 packets received while VPN is connected.")
+            pytest.fail(
+                "[TEST] Ping returned 0 packets received while VPN is connected."
+            )
     except Exception as e:
         pytest.fail(f"[TEST] Ping while VPN is connected failed unexpectedly: {e}")
 
-    print("[TEST] 3) Forcibly stopping VPN from outside the connector (scutil --nc stop)...")
+    print(
+        "[TEST] 3) Forcibly stopping VPN from outside the connector (scutil --nc stop)..."
+    )
     try:
         subprocess.check_call(["scutil", "--nc", "stop", "MyL2TP"])
         print("[TEST] scutil stop invoked successfully.")
     except subprocess.CalledProcessError as e:
         pytest.fail(f"[TEST] Failed to forcibly stop VPN: {e}")
 
-    print("[TEST] 4) Wait 4s for kill-switch monitor to see 'Disconnected' and block traffic.")
+    print(
+        "[TEST] 4) Wait 4s for kill-switch monitor to see 'Disconnected' and block traffic."
+    )
     await asyncio.sleep(4)
 
-    print("[TEST] 5) Attempt ping -> expected to fail since kill-switch should be active.")
+    print(
+        "[TEST] 5) Attempt ping -> expected to fail since kill-switch should be active."
+    )
     ping_failed = False
     try:
-        output = subprocess.check_output(["ping", "-c", "2", "-W", "2", "8.8.8.8"], timeout=10)
+        output = subprocess.check_output(
+            ["ping", "-c", "2", "-W", "2", "8.8.8.8"], timeout=10
+        )
         print("[TEST] Ping output after forced drop:\n", output.decode("utf-8"))
     except subprocess.CalledProcessError:
         print("[TEST] Ping returned non-zero exit code -> means block. Good!")
@@ -167,7 +189,9 @@ async def test_integration_vpn_kill_switch_forced_drop():
         print("[TEST] Ping timed out -> also means block.")
         ping_failed = True
 
-    assert ping_failed, "[TEST] We expected ping to fail after forced drop with kill-switch."
+    assert (
+        ping_failed
+    ), "[TEST] We expected ping to fail after forced drop with kill-switch."
 
     print("[TEST] 6) Disable kill-switch, stop monitor, restore traffic.")
     try:
@@ -177,6 +201,8 @@ async def test_integration_vpn_kill_switch_forced_drop():
         print("[TEST] Stopped kill-switch monitor.")
         assert "disabled" in disable_msg.lower()
     except Exception as e:
-        print(f"[TEST] Warning: disabling kill-switch or stopping monitor encountered error: {e}")
+        print(
+            f"[TEST] Warning: disabling kill-switch or stopping monitor encountered error: {e}"
+        )
 
     print("[TEST] Completed test_integration_vpn_kill_switch_forced_drop successfully.")

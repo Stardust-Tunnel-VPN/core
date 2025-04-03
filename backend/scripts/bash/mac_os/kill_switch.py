@@ -40,13 +40,18 @@ async def enable_kill_switch() -> str:
         script_path = SCRIPTS_DIR / ScriptsNames.ENABLE_KILL_SWITCH.value
 
         proc = await asyncio.create_subprocess_exec(
-            "bash", str(script_path), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            "bash",
+            str(script_path),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
         stdout, stderr = await proc.communicate()
 
         if proc.returncode != 0:
-            raise RuntimeError(f"Failed to enable kill switch. Stderr: {stderr.decode()}")
+            raise RuntimeError(
+                f"Failed to enable kill switch. Stderr: {stderr.decode()}"
+            )
 
         return stdout.decode()
 
@@ -63,13 +68,18 @@ async def disable_kill_switch() -> str:
         script_path = SCRIPTS_DIR / ScriptsNames.DISABLE_KILL_SWITCH.value
 
         proc = await asyncio.create_subprocess_exec(
-            "bash", str(script_path), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            "bash",
+            str(script_path),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
         stdout, stderr = await proc.communicate()
 
         if proc.returncode != 0:
-            raise RuntimeError(f"Failed to disable kill switch. Stderr: {stderr.decode()}")
+            raise RuntimeError(
+                f"Failed to disable kill switch. Stderr: {stderr.decode()}"
+            )
 
         return stdout.decode()
 

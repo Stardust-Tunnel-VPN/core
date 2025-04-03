@@ -121,7 +121,6 @@ async def disable_kill_switch() -> str:
 
 @router.get(
     "/vpn_servers_list",
-    # response_model=VPNGateServersSchema
 )
 async def get_vpn_servers(
     handler: VPNGateHandler = Depends(get_vpngate_handler),
@@ -138,7 +137,4 @@ async def get_vpn_servers(
     Returns:
         List[Dict[str, str]]: The VPN servers from the vpngate.net website.
     """
-    try:
-        return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)
-    except Exception as exc:
-        return {"You've got an error in getting vpn server list method, ": str(exc)}
+    return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)

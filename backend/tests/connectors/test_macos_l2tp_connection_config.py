@@ -12,7 +12,9 @@ import pytest
 
 from configuration.macos_l2tp_connection import (
     extract_ip_address_from_service_name,
-    extract_ip_address_from_service_name_sync, open_macos_network_settings)
+    extract_ip_address_from_service_name_sync,
+    open_macos_network_settings,
+)
 
 
 @pytest.mark.asyncio
@@ -104,5 +106,7 @@ async def test_extract_ip_address_from_service_name_error():
     mock_proc.returncode = 2
     mock_proc.communicate.return_value = (b"", b"some scutil error")
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-        with pytest.raises(RuntimeError, match="Failed to extract IP address: some scutil error"):
+        with pytest.raises(
+            RuntimeError, match="Failed to extract IP address: some scutil error"
+        ):
             await extract_ip_address_from_service_name("FailVPN")

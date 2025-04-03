@@ -9,5 +9,7 @@ It includes all the API routers in the application.
 
 main_router = APIRouter()
 main_router.include_router(
-    vpn_connector_router, prefix="/api/v1", tags=["VPN Connector", "VPN Servers", "VPNGate"]
+    vpn_connector_router,
+    prefix="/api/v1",
+    tags=["VPN Connector", "VPN Servers", "VPNGate"],
 )
