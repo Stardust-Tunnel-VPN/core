@@ -13,14 +13,12 @@ repos:
     hooks:
       - id: run-tests-locally
         name: Run tests
-        # 'entry' будет bash-скриптом, который зайдёт в backend и запустит poetry run pytest
+
         entry: bash
         language: system
         pass_filenames: false
-        # stages может быть [commit, push], [commit], [manual] и т.д.
-        # pre-commit migrate-config поможет подобрать актуальное значение
+
         stages: [commit, push]
-        # тут передаем args для bash:
         args:
           - -c
           - |

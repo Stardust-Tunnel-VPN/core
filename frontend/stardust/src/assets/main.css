@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #6b7280;
+  --color-border-primary: #e5e7eb;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #9ca3af;
+  --color-bg-hover: #f3f4f6;
+  --color-logs-primary: #f9fafb;
+  --color-connected: #d1ffbd;
+  --color-disconnected: #fee2e2;
+  --color-main-accent: #5d3fd3;
+  --color-main-accent-hover: #ffadff;
+  --font-source-code-pro: 'Source Code Pro', monospace;
+  --font-inter: 'Inter', sans-serif;
+}
+
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafc;
+  --color-border-primary: #e5e7eb;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #9ca3af;
+  --color-bg-hover: #f3f4f6;
+}
+
+.dark {
+  --color-bg-primary: #1f2937;
+  --color-bg-secondary: #111827;
+  --color-border-primary: #374151;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #6b7280;
+  --color-bg-hover: #374151;
+  --color-logs-primary: #374151;
+}
+
+/* TODO: REFACTOR PLS))) */
+
+.scrollbar-dark::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-primary);
+  border-radius: 4px;
+  border: 2px solid var(--color-bg-secondary);
+}
+
+.dark .scrollbar-dark::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+.dark .scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-primary);
+  border: 2px solid var(--color-bg-secondary);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-dark::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-primary);
+  border-radius: 4px;
+  border: 2px solid var(--color-bg-secondary);
+}
+
+.dark .scrollbar-dark::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+.dark .scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-primary);
+  border: 2px solid var(--color-bg-secondary);
+}
