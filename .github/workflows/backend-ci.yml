@@ -33,7 +33,9 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          poetry install
+          poetry install --no-interaction --no-ansi
+        env:
+          POETRY_NO_INTERACTION: 1
 
       - name: Check code formatting with Black
         run: |
