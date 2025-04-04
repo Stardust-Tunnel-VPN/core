@@ -1,9 +1,10 @@
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 
 from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
+from core.managers.keychain_manager_macos import SudoKeychainManager
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
@@ -11,13 +12,34 @@ from utils.reusable.sort_directions import SortDirection
 
 router = APIRouter()
 
-connector_instance: IVpnConnector = get_vpn_connector()
+sudo_keychain_manager: SudoKeychainManager = SudoKeychainManager()
+
+
+from fastapi import Body
+
+# TODO: Implement & Provide pydantic schemas. I'm too lazy to do it now.
+
+
+@router.post("/store_sudo_password")
+def store_sudo_password(body: dict = Body(...)) -> dict:
+    """
+    Expects JSON: {"password": "..."}
+    """
+    password = body.get("password")
+    if not password:
+        return {"error": "No 'password' field in JSON."}
+
+    if isinstance(connector_instance, MacOSL2TPConnector):
+        connector_instance.keychain_manager.store_sudo_password(password)
+        return {"status": "Password stored successfully."}
+    else:
+        return {"error": "Current connector is not MacOSL2TPConnector."}
 
 
 @router.post("/connect")
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
-    kill_switch_enabled: Optional[bool] = True,
+    kill_switch_enabled: Optional[bool] = False,
 ) -> str:
     """
     Connect to the given VPN server using L2TP/IPSec.
@@ -33,15 +55,12 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        result = await connector_instance.connect(server_ip=server_ip)
-
-        if kill_switch_enabled:
-            if isinstance(connector_instance, MacOSL2TPConnector):
-                connector_instance.start_kill_switch_monitor(interval=2.0)
-
+        result = await connector_instance.connect(
+            server_ip=server_ip, kill_switch_enabled=kill_switch_enabled
+        )
         return result
     except Exception as exc:
-        return {"You've got an error in connect to vpn method, ": str(exc)}
+        return f"You've got an error in connect to vpn method, {exc}"
 
 
 @router.post("/disconnect")
@@ -64,7 +83,7 @@ async def disconnect_from_vpn(
 
         return await connector_instance.disconnect(server_ip=server_ip)
     except Exception as exc:
-        return {"You've got an error in disconnect from vpn method, ": str(exc)}
+        return f"You've got an error in disconnect from vpn method, {exc}"
 
 
 @router.get("/status")

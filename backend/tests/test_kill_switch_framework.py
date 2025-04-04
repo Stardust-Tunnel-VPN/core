@@ -11,11 +11,12 @@ to avoid actually running them, or we can test them for presence.
 """
 
 import asyncio
+import subprocess
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from scripts.bash.mac_os.kill_switch import (
+from scripts.bash.mac.kill_switch import (
     ConfScriptsPaths,
     ScriptsNames,
     disable_kill_switch,
