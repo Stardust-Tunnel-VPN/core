@@ -12,7 +12,6 @@ from utils.reusable.sort_directions import SortDirection
 
 router = APIRouter()
 
-connector_instance: IVpnConnector = get_vpn_connector()
 sudo_keychain_manager: SudoKeychainManager = SudoKeychainManager()
 
 
