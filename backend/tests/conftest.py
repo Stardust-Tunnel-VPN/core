@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -47,3 +48,13 @@ def mocked_parser(sample_csv):
     parser = Parser("fakeurl")
     parser.parseURL = lambda: sample_csv
     return parser
+
+
+@pytest.fixture(autouse=True)
+def ensure_pf_disabled():
+    """
+    Fixture to ensure that pf is disabled (pfctl -d) after test completes,
+    so we don't leave kill-switch active on the system.
+    """
+    yield
+    subprocess.run(["sudo", "pfctl", "-d"], check=False)
