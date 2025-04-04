@@ -12,7 +12,9 @@ class SudoKeychainManager:
     This class provides methods to securely save, retrieve, and delete the sudo password in the macOS Keychain.
     """
 
-    def __init__(self, service_name: str = "StardustVPNApp", account_name: str = "sudo_password"):
+    def __init__(
+        self, service_name: str = "StardustVPNApp", account_name: str = "sudo_password"
+    ):
         """
         Initializes the SudoKeychainManager with the specified service and account names.
 
