@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue'
 import Button from '@/components/Buttons/Button.vue'
+import vpn_vid_gif from '@/assets/gifs/VPN_VID_guide.gif'
 
 const props = defineProps<{
   visible: boolean
@@ -64,7 +65,7 @@ function onGotIt() {
           help you! 🤗
         </p>
         <div class="mb-4">
-          <img alt="Instructional GIF" class="w-full object-contain" src="" />
+          <img alt="Instructional GIF" class="w-full object-contain" :src="vpn_vid_gif" />
         </div>
         <div class="flex justify-end">
           <Button @click="onGotIt" text="Got it! 👍" is-active-button />

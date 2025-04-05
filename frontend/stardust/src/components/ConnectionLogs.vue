@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
+import toastr from 'toastr'
 
 const logsStore = useConnectionLogsStore()
 
@@ -16,6 +17,9 @@ function handleEnter() {
     logsStore.addLog(command)
     logsStore.addLog('Oops! Nuclear warheads have been launched at the communists! 🚀☢️')
     userInput.value = ''
+    toastr.warning(
+      'This is a simulation. No real commands are executed. Maybe. Or maybe not. Who knows? ',
+    )
   }
 }
 </script>

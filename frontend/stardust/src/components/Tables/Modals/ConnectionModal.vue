@@ -8,6 +8,7 @@ import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
 import { useCurrentOsStore } from '@/stores/currentOsStore'
 import KillSwitchToggle from '@/components/KillSwitchToggle.vue'
 import Input from '@/components/Input.vue'
+import toastr from 'toastr'
 
 enum ConnectionMessages {
   CONNECT = 'Do you want to connect to MyL2TP Connection?',
@@ -94,12 +95,16 @@ async function disconnectFromMyL2TP() {
 
 async function storeSudoPassword() {
   if (!sudoPassword.value) {
-    return 'Please enter your sudo password!'
+    toastr.error('Please enter your sudo password!')
+    return
   }
   try {
-    await httpClient.storeSudoPassword(sudoPassword.value)
+    await httpClient.storeSudoPassword(sudoPassword.value).then(() => {
+      toastr.success('Sudo password stored successfully! ✅')
+    })
     sudoPassword.value = ''
   } catch (error) {
+    toastr.error('Failed to save sudo password!')
     console.error('Error storing sudo password:', error)
   }
 }

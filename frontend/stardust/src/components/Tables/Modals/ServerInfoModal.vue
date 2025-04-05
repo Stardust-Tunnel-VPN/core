@@ -9,6 +9,7 @@ import Button from '@/components/Buttons/Button.vue'
 import Icon from '@/components/Icon.vue'
 import MacInfoModal from '@/components/Tables/Modals/MacInfoModal.vue'
 import { useCurrentOsStore } from '@/stores/currentOsStore'
+import toastr from 'toastr'
 
 const props = defineProps<{
   visible: boolean
@@ -57,8 +58,12 @@ const onClose = () => {
 function copyToClipboard(text: string) {
   navigator.clipboard
     .writeText(text)
-    .then(() => console.log('Copied to clipboard:', text))
-    .catch((err) => console.error('Failed to copy:', err))
+    .then(() => {
+      toastr.success('Copied to clipboard!')
+    })
+    .catch((err) => {
+      toastr.error('Failed to copy text')
+    })
 }
 </script>
 

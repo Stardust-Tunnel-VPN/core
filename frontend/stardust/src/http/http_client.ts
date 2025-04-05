@@ -3,6 +3,7 @@ import type { AxiosInstance } from 'axios'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
 import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
 import { useCurrentOsStore } from '@/stores/currentOsStore'
+import toastr from 'toastr'
 
 /**
  * StardustHttpClient.ts
@@ -49,9 +50,14 @@ export class StardustHttpClient {
       const response = await this.axiosInstance.post<string>('/connect', null, { params })
 
       logsStore.addLog(response.data)
+
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
+        toastr.error(
+          `Failed to connect to the server: ${error.response.data.error}`,
+          'Connection Error',
+        )
         throw new Error(
           `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
         )
