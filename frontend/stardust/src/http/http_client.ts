@@ -2,6 +2,7 @@ import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
 import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
+import { useCurrentOsStore } from '@/stores/currentOsStore'
 
 /**
  * StardustHttpClient.ts
@@ -103,6 +104,31 @@ export class StardustHttpClient {
       }
       logsStore.addLog('Failed to check VPN status')
       throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  async storeSudoPassword(sudoPassword: string): Promise<string> {
+    const logsStore = useConnectionLogsStore()
+    const osStore = useCurrentOsStore()
+    if (osStore.currentOs === 'mac') {
+      try {
+        const response = await this.axiosInstance.post<string>('/store_sudo_password', {
+          sudo_password: sudoPassword,
+        })
+        logsStore.addLog('Stored sudo password')
+        return response.data
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response) {
+          throw new Error(
+            `HTTP error ${error.response.status}: ${JSON.stringify(error.response.data)}`,
+          )
+        }
+        logsStore.addLog('Failed to store sudo password')
+        throw new Error(`HTTP error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    } else {
+      logsStore.addLog('Sudo password storage is not supported on this OS')
+      throw new Error('Sudo password storage is not supported on this OS')
     }
   }
 

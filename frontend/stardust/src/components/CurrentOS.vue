@@ -19,10 +19,10 @@ const systemInfo = computed(() => {
   <Frame
     size="medium"
     header-text="Current OS"
-    subheader-text="See information about your current OS. There is a different connection-behavior based on your OS."
+    subheader-text="Your current OS. There is a different connection-behavior based on your OS."
   >
     <div class="flex items-center justify-between px-6">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 pb-2">
         <span class="text-lg font-bold text-text-primary"
           >Your current OS is {{ systemInfo.name }}</span
         >
