@@ -6,8 +6,6 @@ const props = defineProps<{
   size: 'small' | 'medium' | 'large' | 'table'
   headerText?: string
   subheaderText?: string
-  isDarkMode?: boolean
-  bgColor?: 'white' | 'gray'
 }>()
 
 const frameClasses = computed(() => {
