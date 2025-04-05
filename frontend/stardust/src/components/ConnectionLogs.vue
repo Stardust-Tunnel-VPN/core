@@ -26,7 +26,7 @@ function handleEnter() {
 
 <template>
   <div
-    class="terminal-container hover-refresh w-full max-w-[315px] h-full max-h-[190px] bg-[#0f2d0f] p-3 rounded-md overflow-y-auto scrollbar-hide hover:scale-103 transition-transform duration-300"
+    class="terminal-container hover-refresh w-full max-w-[315px] h-full max-h-[190px] bg-[#0f2d0f] pt-3 pr-3 pl-3 pb-0 rounded-md overflow-y-auto scrollbar-hide hover:scale-103 transition-transform duration-300"
   >
     <span class="terminal-title block text-green-300 text-xl font-mono mb-2"
       >Connection Logs...</span

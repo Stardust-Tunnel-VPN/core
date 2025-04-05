@@ -106,9 +106,10 @@ onMounted(() => {
 })
 </script>
 
+<!-- TODO: make less code in this section - split those divs with Frames-components onto the different components -->
 <template>
-  <div class="flex items-center justify-evenly pt-[40px] bg-green-200">
-    <div class="flex justify-center">
+  <div class="flex items-stretch justify-evenly pt-[40px]">
+    <div class="flex h-full">
       <!-- TABLE -->
 
       <div class="flex items-center px-6">
@@ -147,32 +148,32 @@ onMounted(() => {
           </div>
         </Frame>
       </div>
-    </div>
-    <!-- RIGHT-SIDE  -->
-    <div class="flex flex-col gap-10">
-      <CurrentOS :currentOs="props.currentOs" />
-      <Frame
-        size="medium"
-        headerText="Connection status"
-        subheaderText="Monitor your VPN connection and connect"
-      >
-        <div class="flex flex-row justify-start px-6 py-2">
-          <ConnectionButton @click="toggleConnectionModal" />
-          <ConnectionModal
-            v-model:visible="isConnectionModalVisible"
-            v-model:kill-switch-enabled="killSwitchEnabled"
-          />
-        </div>
-      </Frame>
-      <Frame
-        size="large"
-        headerText="Connection Logs"
-        subheaderText="Take a look at the logs of your recent actions in this strange terminal..."
-      >
-        <div class="w-full h-full flex items-start justify-center">
-          <ConnectionLogs />
-        </div>
-      </Frame>
+      <!-- RIGHT-SIDE  -->
+      <div class="flex flex-1 flex-col h-auto justify-between">
+        <CurrentOS :currentOs="props.currentOs" />
+        <Frame
+          size="medium"
+          headerText="Connection status"
+          subheaderText="Monitor your VPN connection and connect"
+        >
+          <div class="flex flex-row justify-start px-6 py-2">
+            <ConnectionButton @click="toggleConnectionModal" />
+            <ConnectionModal
+              v-model:visible="isConnectionModalVisible"
+              v-model:kill-switch-enabled="killSwitchEnabled"
+            />
+          </div>
+        </Frame>
+        <Frame
+          size="large"
+          headerText="Connection Logs"
+          subheaderText="Take a look at the logs of your recent actions in this strange terminal..."
+        >
+          <div class="w-full h-full flex items-start justify-center">
+            <ConnectionLogs />
+          </div>
+        </Frame>
+      </div>
     </div>
   </div>
   <ServerInfoWarnModal

@@ -7,7 +7,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <body class="bg-bg-secondary h-screen p-4">
+  <body class="bg-bg-secondary h-screen">
     <ServersList :current-os="props.currentOs" />
   </body>
 </template>
