@@ -3,6 +3,7 @@
 import subprocess
 import logging
 import asyncio
+import socket
 from typing import Optional
 
 from configuration.win_l2tp_connection import create_windows_l2tp
@@ -34,6 +35,22 @@ class WindowsL2TPConnector(IVpnConnector):
         self.is_connected: Optional[bool] = False
         self.established_server_ip: Optional[str] = False
 
+    def _resolve_hostname(self, hostname: str) -> str:
+        """
+        Resolve the hostname to an IP address.
+
+        Args:
+            hostname (str): The hostname to resolve.
+
+        Returns:
+            str: The resolved IP address.
+        """
+        try:
+            return socket.gethostbyname(hostname)
+        except Exception as exc:
+            logger.error(f"Failed to resolve hostname {hostname}: {exc}")
+            raise exc
+
     def _connect_sync(
         self,
         server_ip: str,
@@ -52,7 +69,12 @@ class WindowsL2TPConnector(IVpnConnector):
             if not server_ip:
                 raise ValueError("server_ip cannot be None or empty.")
 
-            create_windows_l2tp(server_ip=server_ip, name=self.connection_name, psk=psk)
+            create_windows_l2tp(
+                server_ip=server_ip,
+                name=self.connection_name,
+                psk=psk,
+                kill_switch_enabled=kill_switch_enabled,
+            )
 
             # TODO: extract to a separate method/function
             cmd = cmds_map_windows["connect_to_l2tp_service"][:]
@@ -137,6 +159,8 @@ class WindowsL2TPConnector(IVpnConnector):
         except Exception as exc:
             logger.error(f"Failed to disconnect from {server_ip}: {exc}")
             raise exc
+        finally:
+            return self.disable_kill_switch()
 
     async def disconnect(
         self,
@@ -215,106 +239,148 @@ class WindowsL2TPConnector(IVpnConnector):
             logger.error(f"Failed to get status for {server_ip}: {exc}")
             raise exc
 
-    def enable_kill_switch(
-        self,
-        server_ip: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        psk: Optional[str] = None,
-    ) -> str:
-        """
-        A naive kill-switch via netsh advfirewall.
-        Blocks all outbound traffic except the VPN server IP.
+    # def enable_kill_switch(
+    #     self,
+    #     server_ip: Optional[str] = None,
+    #     username: Optional[str] = None,
+    #     password: Optional[str] = None,
+    #     psk: Optional[str] = None,
+    # ) -> str:
+    #     """
+    #     A naive kill-switch via netsh advfirewall.
+    #     Blocks all outbound traffic except the VPN server IP.
 
-        Args:
-            server_ip (str): The VPN server IP.
-        Returns:
-            str: Success message.
-        """
-        try:
-            if not server_ip:
-                raise ValueError("server_ip cannot be None or empty.")
+    #     Args:
+    #         server_ip (str): The VPN server IP.
+    #     Returns:
+    #         str: Success message.
+    #     """
+    #     try:
+    #         if not server_ip:
+    #             raise ValueError("server_ip cannot be None or empty.")
 
-            logger.info(f"Enabling kill switch on Windows for {server_ip}...")
+    #         ip_firewall = self._resolve_hostname(hostname=server_ip)
+    #         print("Server IP (resolved)", ip_firewall)
 
-            block_cmd = [
-                "netsh",
-                "advfirewall",
-                "firewall",
-                "add",
-                "rule",
-                "name=KillSwitchBlockAll",
-                "dir=out",
-                "action=block",
-                "remoteip=0.0.0.0/0",
-            ]
-            res_block = subprocess.run(block_cmd, capture_output=True, text=True)
-            if res_block.returncode != 0:
-                raise RuntimeError(f"Failed to block all: {res_block.stdout or res_block.stderr}")
+    #         logger.info(f"Enabling kill switch on Windows for {ip_firewall}...")
 
-            allow_cmd = [
-                "netsh",
-                "advfirewall",
-                "firewall",
-                "add",
-                "rule",
-                "name=KillSwitchAllowVPN",
-                "dir=out",
-                "action=allow",
-                f"remoteip={server_ip}",
-            ]
-            res_allow = subprocess.run(allow_cmd, capture_output=True, text=True)
-            if res_allow.returncode != 0:
-                raise RuntimeError(
-                    f"Failed to allow {server_ip}: {res_allow.stdout or res_allow.stderr}"
-                )
+    #         block_cmd = [
+    #             "netsh",
+    #             "advfirewall",
+    #             "firewall",
+    #             "add",
+    #             "rule",
+    #             "name=KillSwitchBlockAll",
+    #             "dir=out",
+    #             "action=block",
+    #             "remoteip=any",
+    #         ]
+    #         res_block = subprocess.run(block_cmd, capture_output=True, text=True)
+    #         if res_block.returncode != 0:
+    #             raise RuntimeError(f"Failed to block all: {res_block.stdout or res_block.stderr}")
 
-            return "Kill switch enabled successfully."
+    #         allow_cmd = [
+    #             "netsh",
+    #             "advfirewall",
+    #             "firewall",
+    #             "add",
+    #             "rule",
+    #             "name=KillSwitchAllowVPN",
+    #             "dir=out",
+    #             "action=allow",
+    #             f"remoteip={ip_firewall}",
+    #         ]
+    #         res_allow = subprocess.run(allow_cmd, capture_output=True, text=True)
+    #         if res_allow.returncode != 0:
+    #             raise RuntimeError(
+    #                 f"Failed to allow {ip_firewall}: {res_allow.stdout or res_allow.stderr}"
+    #             )
 
-        except Exception as exc:
-            logger.error(f"Failed to enable kill switch: {exc}")
-            raise exc
+    #         return "Kill switch enabled successfully."
 
-    def disable_kill_switch(
-        self,
-        server_ip: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        psk: Optional[str] = None,
-    ) -> str:
-        """
-        Remove kill-switch rules.
+    #     except Exception as exc:
+    #         logger.error(f"Failed to enable kill switch: {exc}")
+    #         raise exc
 
-        Args:
-            server_ip (str): The VPN server IP.
+    # def disable_kill_switch(
+    #     self,
+    #     server_ip: Optional[str] = None,
+    #     username: Optional[str] = None,
+    #     password: Optional[str] = None,
+    #     psk: Optional[str] = None,
+    # ) -> str:
+    #     """
+    #     Remove kill-switch rules.
 
-        Returns:
-            str: Success message.
-        """
-        try:
-            logger.info("Disabling kill switch on Windows.")
+    #     Args:
+    #         server_ip (str): The VPN server IP.
 
-            remove_block = [
-                "netsh",
-                "advfirewall",
-                "firewall",
-                "delete",
-                "rule",
-                "name=KillSwitchBlockAll",
-            ]
-            res_block = subprocess.run(remove_block, capture_output=True, text=True)
+    #     Returns:
+    #         str: Success message.
+    #     """
+    #     try:
+    #         logger.info("Disabling kill switch on Windows.")
 
-            remove_allow = [
-                "netsh",
-                "advfirewall",
-                "firewall",
-                "delete",
-                "rule",
-                "name=KillSwitchAllowVPN",
-            ]
-            res_allow = subprocess.run(remove_allow, capture_output=True, text=True)
+    #         remove_block = [
+    #             "netsh",
+    #             "advfirewall",
+    #             "firewall",
+    #             "delete",
+    #             "rule",
+    #             "name=KillSwitchBlockAll",
+    #         ]
+    #         res_block = subprocess.run(remove_block, capture_output=True, text=True)
 
-            return "Kill switch disabled successfully."
-        except Exception as exc:
-            logger.error(f"Failed to disable kill switch: {exc}")
-            raise exc
+    #         remove_allow = [
+    #             "netsh",
+    #             "advfirewall",
+    #             "firewall",
+    #             "delete",
+    #             "rule",
+    #             "name=KillSwitchAllowVPN",
+    #         ]
+    #         res_allow = subprocess.run(remove_allow, capture_output=True, text=True)
+
+    #         return "Kill switch disabled successfully."
+    #     except Exception as exc:
+    #         logger.error(f"Failed to disable kill switch: {exc}")
+    #         raise exc
+
+    # def enable_kill_switch(self, *args, **kwargs) -> str:
+    #     """ """
+    #     try:
+
+    #         adapters_to_disable = ["Ethernet", "WiFi"]
+
+    #         for adapter in adapters_to_disable:
+    #             cmd = ["netsh", "interface", "set", "interface", adapter, "admin=disabled"]
+    #             result = subprocess.run(cmd, capture_output=True, text=True)
+    #             if result.returncode != 0:
+    #                 raise RuntimeError(
+    #                     f"Failed to disable adapter '{adapter}': {result.stdout or result.stderr}"
+    #                 )
+
+    #         return "Kill switch enabled by disabling network adapters."
+
+    #     except Exception as exc:
+    #         logger.error(f"Failed to enable kill switch (disable adapters): {exc}")
+    #         raise exc
+
+    # def disable_kill_switch(self, *args, **kwargs) -> str:
+    #     """ """
+    #     try:
+    #         adapters_to_enable = ["Ethernet", "Wi-Fi"]
+
+    #         for adapter in adapters_to_enable:
+    #             cmd = ["netsh", "interface", "set", "interface", adapter, "admin=enabled"]
+    #             result = subprocess.run(cmd, capture_output=True, text=True)
+
+    #             if result.returncode != 0:
+    #                 raise RuntimeError(
+    #                     f"Failed to enable adapter '{adapter}': {result.stdout or result.stderr}"
+    #                 )
+
+    #         return "Kill switch disabled by enabling network adapters."
+    #     except Exception as exc:
+    #         logger.error(f"Failed to disable kill switch (enable adapters): {exc}")
+    #         raise exc
