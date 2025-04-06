@@ -12,7 +12,9 @@ export const useConnectionStatusStore = defineStore('connectionStatus', {
     async getVpnConnectionStatus() {
       const httpClient = new StardustHttpClient()
       const response = await httpClient.checkVpnStatus()
-      this.setConnected(response.toLowerCase() === 'connected')
+      console.log('VPN status response:', response)
+      const isConnected = response.toLowerCase().includes('successfully')
+      this.setConnected(isConnected)
     },
   },
 })

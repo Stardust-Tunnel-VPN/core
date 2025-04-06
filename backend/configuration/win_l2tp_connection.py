@@ -1,5 +1,5 @@
-import subprocess
 import logging
+import subprocess
 
 from scripts.powershell.rasdial_vpn_connection import RasdialL2TP_Scripts
 
@@ -26,7 +26,9 @@ def run_powershell_script(script: str) -> str:
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode != 0:
-            raise RuntimeError(result.stdout or result.stderr or "Unknown PowerShell error.")
+            raise RuntimeError(
+                result.stdout or result.stderr or "Unknown PowerShell error."
+            )
 
         return result.stdout or ""
     except Exception as exc:
@@ -119,8 +121,12 @@ def create_or_update_windows_l2tp(server_ip: str, name: str, psk: str) -> str:
             try:
                 return set_vpn_connection(server_ip, name, psk)
             except RuntimeError as set_err:
-                logging.error(f"Failed to update existing VPN profile '{name}': {set_err}")
-                raise RuntimeError(f"Failed to update VPN profile '{name}': {set_err}") from set_err
+                logging.error(
+                    f"Failed to update existing VPN profile '{name}': {set_err}"
+                )
+                raise RuntimeError(
+                    f"Failed to update VPN profile '{name}': {set_err}"
+                ) from set_err
         else:
             logging.error(f"Failed to add VPN profile '{name}': {add_err}")
             raise exc
@@ -144,7 +150,9 @@ def create_windows_l2tp(server_ip: str, name: str, psk: str = "vpn") -> str:
     Raises:
         RuntimeError: If creation or update fails.
     """
-    logging.info(f"Ensuring L2TP VPN connection: name='{name}', server_ip='{server_ip}'")
+    logging.info(
+        f"Ensuring L2TP VPN connection: name='{name}', server_ip='{server_ip}'"
+    )
 
     try:
         return create_or_update_windows_l2tp(server_ip, name, psk)

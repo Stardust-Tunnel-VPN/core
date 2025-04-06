@@ -13,7 +13,6 @@ const emit = defineEmits<{
 
 const onRowClick = (row: IVpnServerResponse) => {
   emit('connect', row)
-  console.log('Server connected')
 }
 
 const formattedSpeed = computed(() => formatSpeed(props.server.Speed))

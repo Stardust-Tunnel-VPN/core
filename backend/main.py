@@ -1,10 +1,11 @@
+import ctypes
+
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import HTTPException, ResponseValidationError
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST
 
 from api.router.router import main_router
-import ctypes
 
 app = FastAPI()
 
@@ -18,7 +19,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 
 @app.exception_handler(ResponseValidationError)
-async def response_validation_exception_handler(request: Request, exc: ResponseValidationError):
+async def response_validation_exception_handler(
+    request: Request, exc: ResponseValidationError
+):
     """
     Custom exception handler for ResponseValidationError.
     """
@@ -32,5 +35,3 @@ async def response_validation_exception_handler(request: Request, exc: ResponseV
 
 
 app.include_router(main_router)
-
-print("Is Admin?", is_admin())

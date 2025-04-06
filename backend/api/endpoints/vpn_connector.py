@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends
@@ -66,7 +67,8 @@ async def connect_to_vpn(
         )
         return result
     except Exception as exc:
-        return {"You've got an error in connect to vpn method, ": str(exc)}
+        logging.exception("Failed to connect to VPN")
+        return {"error": f"Could not connect: {exc}"}
 
 
 @router.post("/disconnect")
@@ -87,9 +89,22 @@ async def disconnect_from_vpn(
         Exception: If failed to disconnect.
     """
     try:
-        return await connector_instance.disconnect(
+        disconnect_result = await connector_instance.disconnect(
             server_ip=server_ip, username=username, password=password, psk=psk
         )
+
+        kill_switch_result = await connector_instance.disable_kill_switch(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
+
+        if kill_switch_result:
+
+            return (
+                f"Disconnected from VPN and kill switch disabled: {disconnect_result}"
+            )
+
+        return disconnect_result
+
     except Exception as exc:
         return f"You've got an error in disconnect from vpn method, {exc}"
 
