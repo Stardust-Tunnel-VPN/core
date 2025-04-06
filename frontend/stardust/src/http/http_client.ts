@@ -48,8 +48,6 @@ export class StardustHttpClient {
         kill_switch_enabled: killSwitchEnabled.toString(),
       }
 
-      console.log(`Connecting to VPN server with params: ${JSON.stringify(params)}`)
-
       const response = await this.axiosInstance.post<string>('/connect', null, { params })
 
       logsStore.addLog(response.data)
