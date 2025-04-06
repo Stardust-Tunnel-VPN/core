@@ -20,7 +20,7 @@ function toggleDarkMode() {
 
 <template>
   <div
-    class="bg-bg-primary w-full h-full max-h-[85px] flex items-center justify-around border-b-[1px] border-border-primary px-10 py-10"
+    class="bg-bg-primary w-full h-full max-h-[85px] flex items-center justify-between border-b-[1px] border-border-primary px-10 py-10"
   >
     <!-- LOGO + HEADERS -->
     <div class="flex items-center gap-2">

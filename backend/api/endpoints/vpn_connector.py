@@ -9,13 +9,12 @@ from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
 from utils.reusable.sort_directions import SortDirection
+from fastapi import Body
 
 router = APIRouter()
 
-sudo_keychain_manager: SudoKeychainManager = SudoKeychainManager()
+connector_instance: IVpnConnector = get_vpn_connector()
 
-
-from fastapi import Body
 
 # TODO: Implement & Provide pydantic schemas. I'm too lazy to do it now.
 

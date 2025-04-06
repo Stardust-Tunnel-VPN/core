@@ -5,7 +5,10 @@ import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response
 import Button from '@/components/Buttons/Button.vue'
 import Icon from '@/components/Icon.vue'
 import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
+import { useCurrentOsStore } from '@/stores/currentOsStore'
 import KillSwitchToggle from '@/components/KillSwitchToggle.vue'
+import Input from '@/components/Input.vue'
+import toastr from 'toastr'
 
 enum ConnectionMessages {
   CONNECT = 'Do you want to connect to MyL2TP Connection?',
@@ -26,8 +29,11 @@ const emit = defineEmits<{
 
 const httpClient = new StardustHttpClient()
 const connectionStatus = useConnectionStatusStore()
+const currentOs = useCurrentOsStore()
 
 const reactiveText = ref<string>(ConnectionMessages.CONNECT)
+
+const sudoPassword = ref<string>('')
 
 const killSwitch = computed<boolean>({
   get: () => props.killSwitchEnabled ?? false,
@@ -37,6 +43,10 @@ const killSwitch = computed<boolean>({
 })
 
 const isConnected = computed(() => connectionStatus.connected)
+
+const isShowPasswordInput = computed(() => {
+  return currentOs.currentOs === 'mac' && killSwitch.value
+})
 
 async function performOperation(
   operation: () => Promise<string>,
@@ -83,6 +93,22 @@ async function disconnectFromMyL2TP() {
   )
 }
 
+async function storeSudoPassword() {
+  if (!sudoPassword.value) {
+    toastr.error('Please enter your sudo password!')
+    return
+  }
+  try {
+    await httpClient.storeSudoPassword(sudoPassword.value).then(() => {
+      toastr.success('Sudo password stored successfully! ✅')
+    })
+    sudoPassword.value = ''
+  } catch (error) {
+    toastr.error('Failed to save sudo password!')
+    console.error('Error storing sudo password:', error)
+  }
+}
+
 function onClose() {
   emit('update:visible', false)
 }
@@ -121,31 +147,117 @@ function onClose() {
             {{ reactiveText }}
           </p>
           <!-- Kill Switch Toggle -->
-          <div class="flex items-center justify-between mt-4">
-            <span class="text-text-primary text-xl font-semibold font-source-code-pro"
-              >Kill Switch feature</span
+          <!-- MACOS -->
+          <div v-if="currentOs.currentOs === 'mac'" class="scrollbar-hide">
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-text-primary text-xl font-semibold font-source-code-pro"
+                >Kill Switch feature</span
+              >
+              <KillSwitchToggle v-model="killSwitch" />
+            </div>
+            <div
+              v-show="killSwitch"
+              class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm"
             >
-            <KillSwitchToggle v-model="killSwitch" />
+              Attention! <br />
+              ⚠️ This setting assumes you are an advanced user and at least know what a kill-switch
+              is. In this MVP version of the app, we did our best to ensure the kill-switch works
+              correctly without disrupting packet exchange, and it works well on macOS. However, if
+              you are unsure about what it is or doubt that you need it, it's better not to use it.
+              <br />
+              - Make sure you have created a VPN connection named "MyL2TP" that you can connect to!
+              🔗 <br />
+              - A sudo password is required to properly use the Packet Filter on macOS. Ensure you
+              remember your sudo password correctly; otherwise, the kill-switch connection will not
+              work! <br />
+              🔑 - Although we implemented a kill-switch monitor that should correctly detect and
+              disable the kill-switch state, nothing in programming is guaranteed. If you notice
+              that packet exchange stops unexpectedly after using this feature, run the command
+              `sudo pfctl -d` in your terminal to disable the pfctl kill-switch configuration. 🚨
+            </div>
+            <!-- SUDO PASSWORD INPUT -->
+            <div
+              v-if="isShowPasswordInput"
+              class="flex flex-row gap-6 items-center justify-between pt-4"
+            >
+              <Input
+                v-model="sudoPassword"
+                placeholder="Enter your sudo password"
+                is-password-input
+                class="w-full"
+              />
+              <div
+                class="flex items-center justify-center w-[45px] h-[40px] border-2 border-bg-secondary bg-bg-secondary rounded-md"
+              >
+                <Icon
+                  @click="storeSudoPassword"
+                  name="check"
+                  focused
+                  size="large"
+                  class="text-green-400"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+              <Button
+                v-if="!isConnected"
+                @click="connectToMyL2TP(serverIp)"
+                text="Connect"
+                is-active-button
+              />
+              <Button v-else @click="disconnectFromMyL2TP" text="Disconnect" is-active-button />
+              <Button @click="onClose" text="Cancel" />
+            </div>
           </div>
-          <div
-            v-show="killSwitch"
-            class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm"
-          >
-            ⚠️ Attention! Although we're working on optimizing the kill-switch feature, we can't
-            guarantee that enabling it will improve your connection speed. We strive to optimize and
-            bypass various issues, but every OS update brings its own challenges. On macOS, it
-            usually works fine, but on Windows, there might be occasional speed drops. We're on it –
-            thank you for your understanding!
-          </div>
-          <div class="flex justify-end gap-2 mt-6">
-            <Button
-              v-if="!isConnected"
-              @click="connectToMyL2TP(serverIp)"
-              text="Connect"
-              is-active-button
-            />
-            <Button v-else @click="disconnectFromMyL2TP" text="Disconnect" is-active-button />
-            <Button @click="onClose" text="Cancel" />
+          <!-- Kill Switch Toggle -->
+          <!-- WINDOWS/OTHERS -->
+          <div v-else class="overflow-y-auto scrollbar-dark">
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-text-primary text-xl font-semibold font-source-code-pro"
+                >Kill Switch feature</span
+              >
+              <KillSwitchToggle v-model="killSwitch" is-disabled />
+            </div>
+            <div
+              class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm"
+            >
+              Attention! Windows users, the kill-switch feature is not developed for you yet 😕. I
+              simply didn’t have enough time to implement it for Windows—I’ve only managed to create
+              one for macOS so far. In fact, there's a prototype that kind of works, but I haven’t
+              thoroughly tested it, so I can’t guarantee its functionality at this time. Stay tuned
+              for updates—everything will be available soon! 🚀
+            </div>
+            <!-- SUDO PASSWORD INPUT -->
+            <div
+              v-if="isShowPasswordInput"
+              class="flex flex-row gap-6 items-baseline justify-between"
+            >
+              <Input
+                v-model="sudoPassword"
+                placeholder="Enter your sudo password"
+                is-password-input
+                class="w-full"
+              />
+              <div class="w-[45px] h-[45px] border-2 border-bg-secondary rounded-md">
+                <Icon
+                  @click="storeSudoPassword"
+                  name="check"
+                  focused
+                  size="large"
+                  class="border-2 border-bg-secondary rounded-md text-green-400"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+              <Button
+                v-if="!isConnected"
+                @click="connectToMyL2TP(serverIp)"
+                text="Connect"
+                is-active-button
+              />
+              <Button v-else @click="disconnectFromMyL2TP" text="Disconnect" is-active-button />
+              <Button @click="onClose" text="Cancel" />
+            </div>
           </div>
         </div>
       </div>

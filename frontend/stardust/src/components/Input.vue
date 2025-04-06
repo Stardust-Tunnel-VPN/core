@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue'
 
 const props = defineProps<{
   placeholder?: string
+  isPasswordInput?: boolean
 }>()
 
 const modelValue = defineModel<string>({
@@ -12,13 +13,23 @@ const modelValue = defineModel<string>({
 </script>
 
 <template>
-  <div class="bg-bg-secondary h-full max-h-[20px] flex items-center justify-end pt-4">
+  <div
+    v-if="!props.isPasswordInput"
+    class="bg-bg-secondary h-full max-h-[20px] flex items-center justify-end"
+  >
     <input
       v-model="modelValue"
       class="relative w-full h-full bg-bg-secondary text-text-primary text-lg px-2 py-2 rounded-md border-border-primary border-2"
       :placeholder="props.placeholder"
     />
-    <!-- <Icon name="search" class="text-white absolute" /> -->
+  </div>
+  <div v-else class="bg-bg-secondary h-full max-h-[20px] flex items-center justify-end">
+    <input
+      v-model="modelValue"
+      type="password"
+      class="relative w-full h-full bg-bg-secondary text-text-primary text-lg px-2 py-2 rounded-md border-border-primary border-2"
+      :placeholder="props.placeholder"
+    />
   </div>
 </template>
 
