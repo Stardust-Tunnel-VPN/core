@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
 import { StardustHttpClient } from '@/http/http_client'
+import { defineStore } from 'pinia'
 
 export const useConnectionStatusStore = defineStore('connectionStatus', {
   state: () => ({

@@ -1,10 +1,10 @@
-import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
-import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
-import { useCurrentOsStore } from '@/stores/currentOsStore'
+import axios from 'axios'
 import toastr from 'toastr'
+import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
 import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
+import { useCurrentOsStore } from '@/stores/currentOsStore'
 
 /**
  * StardustHttpClient.ts
