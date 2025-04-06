@@ -16,7 +16,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="wrapper">
+  <div>
     <Navbar showLogo />
     <Home :currentOs="currentOsStore.currentOs" />
   </div>
