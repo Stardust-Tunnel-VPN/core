@@ -148,7 +148,9 @@ def test_packer_transform_content_search_and_sort(sample_packer):
         None. Asserts that if multiple rows contain '66', they are
         sorted in ascending order by Speed.
     """
-    data = sample_packer.transform_content(search="66", sort_by="Speed", order_by=SortDirection.ASC)
+    data = sample_packer.transform_content(
+        search="66", sort_by="Speed", order_by=SortDirection.ASC
+    )
     if len(data) > 1:
         speeds = [int(row.get("Speed", "0")) for row in data]
         assert speeds == sorted(speeds)
@@ -204,7 +206,9 @@ def test_packer_sort_content_exception(mock_tb, sample_packer):
     Returns:
         None. Asserts that transform_content() returns [] and traceback is printed.
     """
-    with patch.object(sample_packer, "sort_content", side_effect=Exception("Sort fail")):
+    with patch.object(
+        sample_packer, "sort_content", side_effect=Exception("Sort fail")
+    ):
         data = sample_packer.transform_content(sort_by="Ping")
         assert data == []
     mock_tb.print_exc.assert_called_once()

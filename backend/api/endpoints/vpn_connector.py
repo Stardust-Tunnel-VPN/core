@@ -1,20 +1,38 @@
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 
 from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
+from core.managers.keychain_manager_macos import SudoKeychainManager
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
 from core.managers.vpn_manager_win import WindowsL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
 from utils.reusable.sort_directions import SortDirection
 
-import logging
-
 router = APIRouter()
 
 connector_instance: IVpnConnector = get_vpn_connector()
+
+
+# TODO: Implement & Provide pydantic schemas. I'm too lazy to do it now.
+
+
+@router.post("/store_sudo_password")
+def store_sudo_password(body: dict = Body(...)) -> dict:
+    """
+    Expects JSON: {"password": "..."}
+    """
+    password = body.get("password")
+    if not password:
+        return {"error": "No 'password' field in JSON."}
+
+    if isinstance(connector_instance, MacOSL2TPConnector):
+        connector_instance.keychain_manager.store_sudo_password(password)
+        return {"status": "Password stored successfully."}
+    else:
+        return {"error": "Current connector is not MacOSL2TPConnector."}
 
 
 @router.post("/connect")
@@ -39,27 +57,16 @@ async def connect_to_vpn(
         Exception: If failed to connect.
     """
     try:
-        ###  PICKING THE CONNECTOR TYPE AND CONNECT  ###
         result = await connector_instance.connect(
             server_ip=server_ip,
             username=username,
             password=password,
             psk=psk,
+            kill_switch_enabled=kill_switch_enabled,
         )
-
-        ###  ENABLING KILL-SWITCH  ###
-        if kill_switch_enabled:
-            if isinstance(connector_instance, MacOSL2TPConnector):
-                connector_instance.start_kill_switch_monitor(interval=2.0)
-            elif isinstance(connector_instance, WindowsL2TPConnector):
-                connector_instance.enable_kill_switch(
-                    server_ip=server_ip, username=username, password=password, psk=psk
-                )
-
         return result
     except Exception as exc:
-        logging.exception("Failed to connect to VPN")
-        return {"error": f"Could not connect: {exc}"}
+        return {"You've got an error in connect to vpn method, ": str(exc)}
 
 
 @router.post("/disconnect")
@@ -84,7 +91,7 @@ async def disconnect_from_vpn(
             server_ip=server_ip, username=username, password=password, psk=psk
         )
     except Exception as exc:
-        return {"You've got an error in disconnect from vpn method, ": str(exc)}
+        return f"You've got an error in disconnect from vpn method, {exc}"
 
 
 @router.get("/status")
@@ -178,7 +185,4 @@ async def get_vpn_servers(
     Returns:
         List[Dict[str, str]]: The VPN servers from the vpngate.net website.
     """
-    try:
-        return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)
-    except Exception as exc:
-        return {"You've got an error in getting vpn server list method, ": str(exc)}
+    return handler.get_vpn_servers(search=search, sort_by=sort_by, order_by=order_by)

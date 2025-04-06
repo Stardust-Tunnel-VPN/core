@@ -5,7 +5,8 @@ and check behavior for success/failure/timeouts.
 """
 
 import asyncio
-from unittest.mock import AsyncMock, patch
+import subprocess
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -52,7 +53,7 @@ async def test_connect_scutil_fail():
 @pytest.mark.asyncio
 async def test_connect_status_timeout():
     """
-    If after 10 tries we never see 'Connected', raise RuntimeError.
+    If after 30 tries we never see 'Connected', raise RuntimeError.
     """
     connector = MacOSL2TPConnector(service_name="MyL2TP")
     mock_proc = AsyncMock()
@@ -62,8 +63,7 @@ async def test_connect_status_timeout():
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
         with patch.object(connector, "status", return_value="Disconnected"):
             with pytest.raises(
-                RuntimeError,
-                match="VPN did not become 'Connected' after 20s. Possibly failed to establish.",
+                RuntimeError, match="VPN did not become 'Connected' after 30s."
             ):
                 await connector.connect()
 
@@ -134,10 +134,16 @@ async def test_enable_kill_switch_fail():
     If pfctl fails, we raise RuntimeError.
     """
     connector = MacOSL2TPConnector()
-    mock_proc = AsyncMock()
-    mock_proc.returncode = 1
-    mock_proc.communicate.return_value = (b"", b"pfctl error msg")
 
-    with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-        with pytest.raises(RuntimeError, match="Failed to enable kill switch: pfctl error msg"):
+    with patch("subprocess.run") as mock_run:
+        fake_completed = MagicMock()
+        fake_completed.returncode = 1
+        fake_completed.stderr = "pfctl error msg"
+        fake_completed.stdout = ""
+        mock_run.return_value = fake_completed
+
+        with pytest.raises(
+            RuntimeError,
+            match=r"Failed to enable kill switch: Command.*pfctl error msg",
+        ):
             await connector.enable_kill_switch()

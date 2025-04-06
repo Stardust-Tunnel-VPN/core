@@ -29,7 +29,9 @@ async def open_macos_network_settings() -> str:
             err = stderr.decode().strip()
             raise RuntimeError(f"Failed to open network settings: {err}")
 
-        logger.info("Instruct the user to create/configure a VPN (L2TP/IPsec) service manually.")
+        logger.info(
+            "Instruct the user to create/configure a VPN (L2TP/IPsec) service manually."
+        )
         return "Opened macOS Network Settings successfully."
 
     except Exception as exc:

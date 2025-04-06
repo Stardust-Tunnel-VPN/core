@@ -25,6 +25,8 @@ class VPNGateHandler:
         Returns the VPN servers from the vpngate.net website.
         """
         try:
-            return self.packer.transform_content(search=search, sort_by=sort_by, order_by=order_by)
+            return self.packer.transform_content(
+                search=search, sort_by=sort_by, order_by=order_by
+            )
         except Exception as exc:
             return {"You've got an error in getting vpn server list method, ": str(exc)}

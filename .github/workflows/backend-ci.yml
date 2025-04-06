@@ -12,16 +12,12 @@ on:
       - "backend/**"
 
 jobs:
-  test:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-      fail-fast: false
+  lint:
+    name: Lint Checks
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -37,9 +33,18 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          poetry install
+          poetry install --no-interaction --no-ansi
+        env:
+          POETRY_NO_INTERACTION: 1
 
-      - name: Check isort
+      - name: Check code formatting with Black
+        env:
+          POETRY_NO_INTERACTION: 1
+        run: |
+          cd backend
+          poetry run black --check .
+
+      - name: Check isort ordering
         run: |
           cd backend
           poetry run isort --check-only .

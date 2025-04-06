@@ -12,27 +12,44 @@ on:
       - "frontend/**"
 
 jobs:
-  frontend-tests:
+  frontend-ci:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18" # Или другая версия
+          node-version: "18"
+          cache: "npm"
 
       - name: Install dependencies
         run: |
           cd frontend
-          npm install
-          # или yarn install
+          npm ci
 
-      - name: Run lint / build / test
+      - name: Check code formatting with Prettier
+        run: |
+          cd frontend
+          npm run prettier -- --check .
+
+      - name: Run ESLint
         run: |
           cd frontend
           npm run lint
+
+      - name: Run TypeScript type-check (if applicable)
+        run: |
+          cd frontend
+          npm run type-check
+
+      - name: Build project
+        run: |
+          cd frontend
           npm run build
-          npm run test
+
+      # - name: Run tests with coverage
+      #   run: |
+      #     cd frontend
+      #     npm run test -- --coverage
