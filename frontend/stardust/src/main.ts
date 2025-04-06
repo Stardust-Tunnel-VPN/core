@@ -1,14 +1,13 @@
 import './assets/main.css'
+import 'toastr/build/toastr.min.css'
 
 import { createApp, watch } from 'vue'
-import { createPinia } from 'pinia'
-import { useDarkModeStore } from '@/stores/darkModeStore'
 
 import App from './App.vue'
+import { createPinia } from 'pinia'
 import router from './router'
-
 import toastr from 'toastr'
-import 'toastr/build/toastr.min.css'
+import { useDarkModeStore } from '@/stores/darkModeStore'
 
 toastr.options = {
   closeButton: true,

@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { StardustHttpClient } from '@/http/http_client'
-import { SortDirection } from '@/http/http_client'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
+import { SortDirection } from '@/http/http_client'
+import { StardustHttpClient } from '@/http/http_client'
+import { defineStore } from 'pinia'
 
 interface ServersState {
   servers: IVpnServerResponse[]

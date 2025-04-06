@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends
@@ -6,10 +7,10 @@ from api.schemas.servers_list_schema import VPNGateServersSchema
 from core.interfaces.ivpn_connector import IVpnConnector
 from core.managers.keychain_manager_macos import SudoKeychainManager
 from core.managers.vpn_manager_macos import MacOSL2TPConnector
+from core.managers.vpn_manager_win import WindowsL2TPConnector
 from dependencies.vpn_handler_fabric import VPNGateHandler, get_vpngate_handler
 from dependencies.vpn_manager_fabric import get_vpn_connector
 from utils.reusable.sort_directions import SortDirection
-from fastapi import Body
 
 router = APIRouter()
 
@@ -38,8 +39,11 @@ def store_sudo_password(body: dict = Body(...)) -> dict:
 @router.post("/connect")
 async def connect_to_vpn(
     server_ip: Optional[str] = None,
+    username: Optional[str] = "vpn",
+    password: Optional[str] = "vpn",
+    psk: Optional[str] = "vpn",
     kill_switch_enabled: Optional[bool] = False,
-) -> str:
+):
     """
     Connect to the given VPN server using L2TP/IPSec.
 
@@ -55,16 +59,24 @@ async def connect_to_vpn(
     """
     try:
         result = await connector_instance.connect(
-            server_ip=server_ip, kill_switch_enabled=kill_switch_enabled
+            server_ip=server_ip,
+            username=username,
+            password=password,
+            psk=psk,
+            kill_switch_enabled=kill_switch_enabled,
         )
         return result
     except Exception as exc:
-        return f"You've got an error in connect to vpn method, {exc}"
+        logging.exception("Failed to connect to VPN")
+        return {"error": f"Could not connect: {exc}"}
 
 
 @router.post("/disconnect")
 async def disconnect_from_vpn(
     server_ip: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    psk: Optional[str] = None,
 ) -> str:
     """
     Disconnect from the given VPN server.
@@ -77,16 +89,33 @@ async def disconnect_from_vpn(
         Exception: If failed to disconnect.
     """
     try:
-        # if isinstance(connector_instance, MacOSL2TPConnector):
-        #     connector_instance.stop_kill_switch_monitor()
+        disconnect_result = await connector_instance.disconnect(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
 
-        return await connector_instance.disconnect(server_ip=server_ip)
+        kill_switch_result = await connector_instance.disable_kill_switch(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
+
+        if kill_switch_result:
+
+            return (
+                f"Disconnected from VPN and kill switch disabled: {disconnect_result}"
+            )
+
+        return disconnect_result
+
     except Exception as exc:
         return f"You've got an error in disconnect from vpn method, {exc}"
 
 
 @router.get("/status")
-async def check_vpn_status() -> str:
+async def check_vpn_status(
+    server_ip: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    psk: Optional[str] = None,
+) -> str:
     """
     Check if the given server is connected or not.
 
@@ -98,13 +127,20 @@ async def check_vpn_status() -> str:
         str: The status of the VPN connection.
     """
     try:
-        return await connector_instance.status()
+        return await connector_instance.status(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
     except Exception as exc:
         return {"You've got an error in check vpn status method, ": str(exc)}
 
 
 @router.post("/enable_kill_switch")
-async def enable_kill_switch() -> None:
+async def enable_kill_switch(
+    server_ip: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    psk: Optional[str] = None,
+) -> None:
     """
     Enable kill switch, blocking all traffic outside VPN.
 
@@ -115,13 +151,20 @@ async def enable_kill_switch() -> None:
         Exception: If failed to enable kill switch.
     """
     try:
-        return await connector_instance.enable_kill_switch()
+        return await connector_instance.enable_kill_switch(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
     except Exception as exc:
         return {"You've got an error in enable kill switch method, ": str(exc)}
 
 
 @router.post("/disable_kill_switch")
-async def disable_kill_switch() -> str:
+async def disable_kill_switch(
+    server_ip: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    psk: Optional[str] = None,
+) -> str:
     """
     Disable kill switch, restore normal network.
 
@@ -132,7 +175,9 @@ async def disable_kill_switch() -> str:
         Exception: If failed to disable kill switch.
     """
     try:
-        return await connector_instance.disable_kill_switch()
+        return await connector_instance.disable_kill_switch(
+            server_ip=server_ip, username=username, password=password, psk=psk
+        )
     except Exception as exc:
         return {"You've got an error in disable kill switch method, ": str(exc)}
 

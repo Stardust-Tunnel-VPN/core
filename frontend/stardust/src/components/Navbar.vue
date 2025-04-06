@@ -35,7 +35,13 @@ function toggleDarkMode() {
       </div>
     </div>
     <div class="flex gap-6 items-center justify-center">
-      <Button text="📖 Explore Stardust" />
+      <a
+        href="https://synonymous-panda-cec.notion.site/Stardust-Tunnel-Documentation-1c609e377300805ca916c351fa7ae019"
+        target="_blank"
+        rel="Documentation link"
+      >
+        <Button text="📖 Explore Stardust" />
+      </a>
       <Icon
         v-if="darkModeStore.isDarkMode"
         name="dark_mode"

@@ -1,9 +1,10 @@
-import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { IVpnServerResponse } from '@/utils/interfaces/vpn_servers_response'
-import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
-import { useCurrentOsStore } from '@/stores/currentOsStore'
+import axios from 'axios'
 import toastr from 'toastr'
+import { useConnectionLogsStore } from '@/stores/connectionLogsStore'
+import { useConnectionStatusStore } from '@/stores/connectionStatusStore'
+import { useCurrentOsStore } from '@/stores/currentOsStore'
 
 /**
  * StardustHttpClient.ts
@@ -96,11 +97,15 @@ export class StardustHttpClient {
    * Checks the current VPN status.
    * @returns A string with the current VPN status.
    */
+  // TODO: this is shitcode. Don't have any time to refactor it now.
   async checkVpnStatus(): Promise<string> {
     const logsStore = useConnectionLogsStore()
+    const connectionStatusStore = useConnectionStatusStore()
     try {
       const response = await this.axiosInstance.get<string>('/status')
       logsStore.addLog('Checked VPN status')
+      const isConnected = response.data.toLowerCase().includes('connected successfully')
+      connectionStatusStore.setConnected(isConnected)
       return response.data
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {

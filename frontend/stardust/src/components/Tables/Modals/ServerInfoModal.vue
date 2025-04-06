@@ -40,8 +40,10 @@ function connectToVpnServer(server: IVpnServerResponse) {
   try {
     httpClient.connectToVpn(server.IP, false)
     emit('connect', server)
+    toastr.success('Connecting to VPN server...')
   } catch (error) {
     console.error('Failed to connect to VPN server', error)
+    toastr.error('Failed to connect to VPN server')
   } finally {
     connectionStatusStore.getVpnConnectionStatus()
   }

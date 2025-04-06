@@ -80,7 +80,11 @@ async function connectToMyL2TP(serverIp?: string) {
     'Connected successfully! ✅',
     'Failed to connect! ❌',
     5000,
-  )
+  ).then(() => {
+    if (isConnected.value) {
+      emit('update:visible', false)
+    }
+  })
 }
 
 async function disconnectFromMyL2TP() {
@@ -211,7 +215,7 @@ function onClose() {
           </div>
           <!-- Kill Switch Toggle -->
           <!-- WINDOWS/OTHERS -->
-          <div v-else class="overflow-y-auto scrollbar-dark">
+          <div v-else class="scrollbar-hide">
             <div class="flex items-center justify-between mt-4">
               <span class="text-text-primary text-xl font-semibold font-source-code-pro"
                 >Kill Switch feature</span
