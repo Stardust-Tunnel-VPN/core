@@ -1,5 +1,7 @@
 import ctypes
+import multiprocessing
 
+import uvicorn
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import HTTPException, ResponseValidationError
 from fastapi.responses import JSONResponse
@@ -35,3 +37,7 @@ async def response_validation_exception_handler(
 
 
 app.include_router(main_router)
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()  # For Windows support
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, workers=1)
